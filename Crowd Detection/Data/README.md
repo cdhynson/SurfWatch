@@ -4,8 +4,8 @@ https://drive.google.com/drive/folders/10HCga6cGkwwqnVkn924VPDeFENuOGhuv?usp=sha
 
 **Files are formatted as such:**
 
-(MonthDay-HourMinute) Beach Cam (Video Dimensions).mp4
+BeachTagCamNumber (MonthDay-HourMinute) Beach Cam (Video Dimensions).mp4
 
 **Example:**
 
-(0415-1026) Lower Trestles (1920x1080).mp4
+A1 (0415-1026) Lower Trestles (1920x1080).mp4

@@ -4,3 +4,5 @@ matplotlib
 ultralytics
 notebook
 torchvision
+pyyaml
+torch 

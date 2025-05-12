@@ -1,6 +1,6 @@
 
 ## Dependencies
-Before attempting to run, make sure to install the following by running:
+Before attempting to run application, make sure to run the following commands:
 
 ### `npm install react-router-dom`
 

@@ -1,8 +1,10 @@
 import React from "react";
 import BottomNav from "../../components/Navbars/BottomNav";
-import "./Explore.css"
+import TopNav from "../../components/Navbars/TopNav";
 
-function Explore(){
+import "./Settings.css"
+
+function Settings(){
 
   return (<>
 
@@ -10,4 +12,4 @@ function Explore(){
   </>);
 }
 
-export default Explore;
+export default Settings;

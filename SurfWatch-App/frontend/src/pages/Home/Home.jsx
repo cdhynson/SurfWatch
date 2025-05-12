@@ -1,5 +1,7 @@
 import React from "react";
 import BottomNav from "../../components/Navbars/BottomNav";
+import TopNav from "../../components/Navbars/TopNav";
+
 import "./Home.css";
 
 
@@ -11,10 +13,13 @@ function Home() {
 
   return (
     <>
+    <TopNav/>
       <div className="home-container">
         {/* Check-In */}
         <section className="checkin-section">
-          <span id="surf-streak"><p>3 DAY SURFING STREAK!</p></span>
+          <span id="surf-streak">
+            <img src="/assets/fire.svg" alt="Flame Icon" />
+            <p> 3 DAY SURFING STREAK</p></span>
           <button className="checkin-button" onClick={updateStreak}>
             <h2>Check In</h2>
           </button>
@@ -30,7 +35,7 @@ function Home() {
                 alt="sample-cam"
                 className="camera-feed"
               />
-              <p>Sample Cam</p>
+              <p className="location">Sample Cam</p>
             </div>
             <div className="carousel-item">
               <div className="iframe-wrapper">
@@ -42,7 +47,7 @@ function Home() {
                   title="La Jolla Shores Cam"
                 ></iframe>
               </div>
-              <p>La Jolla Shores</p>
+              <p className="location">La Jolla Shores</p>
             </div>
           </div>
         </section>
@@ -50,7 +55,6 @@ function Home() {
         {/* Crowd Forecast Section */}
         <section className="forecast-section">
           <h2>Crowd Forecast</h2>
-          <p>View projected crowd levels across popular beaches.</p>
           <div className="forecast-placeholder">[Forecast Graph Here]</div>
         </section>
       </div>

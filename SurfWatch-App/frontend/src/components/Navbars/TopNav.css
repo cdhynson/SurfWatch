@@ -1,0 +1,10 @@
+.top-nav{
+  position:fixed;
+  overflow: hidden;
+  z-index: 2;
+  height: auto;
+  top: 0px;
+  width: 100%;
+
+  background-color: white;
+}

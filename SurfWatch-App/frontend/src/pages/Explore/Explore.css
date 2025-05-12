@@ -1,0 +1,8 @@
+.explore-container {
+  background-image: url("../../../public/assets/placeholder-map.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+
+  height: 100vh;
+  width: 100vw;
+}

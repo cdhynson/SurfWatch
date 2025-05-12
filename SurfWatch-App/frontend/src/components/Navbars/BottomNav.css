@@ -1,0 +1,10 @@
+.bottom-nav{
+  position:fixed;
+  overflow: hidden;
+  z-index: 1;
+  height: auto;
+  bottom: 0px;
+  width: 100%;
+
+  background-color: white;
+}

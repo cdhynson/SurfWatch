@@ -60,13 +60,24 @@ section {
 }
 
 .carousel-item {
-  min-width: 80vw;
   text-align: center;
+  min-width: 80vw;
+  height:fit-content;
 }
 
+.carousel-item p{
+  margin: 0;
+}
+
+.iframe-wrapper{
+  width: 70vw;
+  height:fit-content;
+}
+
+
 .camera-feed {
-  width: 20vw;
-  height: auto;
+  max-width: 80vw;
+  min-height: auto;
   border: 2px solid #ccc;
   border-radius: 8px;
 }

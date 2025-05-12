@@ -7,4 +7,21 @@
   width: 100%;
 
   background-color: white;
+
+  display: flex;
+  align-items:flex-end;  /* Horizontal center */
+  justify-content: center;  /* Vertical center if height is set */
+  gap: 28vw;
+
+  background-color: white;
+  padding: 1.5em 0;
+  border-bottom: 1px solid rgba(28, 34, 44, 0.25);
+
+}
+
+.top-nav h1{
+  padding: 0;
+  margin: 0;
+  font-style: italic;
+  font-size: 30px;
 }

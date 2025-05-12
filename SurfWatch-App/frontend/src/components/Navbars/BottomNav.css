@@ -6,5 +6,16 @@
   bottom: 0px;
   width: 100%;
 
+  display: flex;
+  align-items:flex-end;  /* Horizontal center */
+  justify-content: center;  /* Vertical center if height is set */
+  gap: 20vw;
+
   background-color: white;
+  padding: 1em 0;
+  border-top: 1px solid rgba(28, 34, 44, 0.25);
+}
+
+.bottom-nav a.active img {
+  filter: invert(48%) sepia(66%) saturate(2383%) hue-rotate(335deg) brightness(110%) contrast(87%);;
 }

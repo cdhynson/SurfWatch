@@ -4,6 +4,16 @@ Before attempting to run application, make sure to run the following commands:
 
 ### `npm install react-router-dom`
 
+## Starting up application
+
+### `cd SurfWatch-App/frontend`
+### `npm start`
+
+In a separate terminal:
+### `cd SurfWatch-App/frontend`
+### `uvicorn main:app --reload`
+
+
 ## Available Scripts
 
 In the project directory, you can run:

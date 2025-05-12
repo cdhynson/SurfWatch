@@ -13,9 +13,9 @@ function TopNav() {
 
   return (
     <nav className="top-nav">
-      <Link to="/settings" className={location.pathname === '/settings' ? 'active' : ''}>Settings</Link>
-      <Link to="/" className={location.pathname === '/' ? 'active' : ''}>SurfWatch</Link>
-      <a href="#" onClick={handleSearchToggle} className={showSearch ? 'active' : ''}>Search</a>
+      <Link to="/settings" className={location.pathname === '/settings' ? 'active' : ''}><img src="/assets/settings.svg" alt="Settings"/></Link>
+      <Link to="/" style={{ textDecoration: 'none', color: 'inherit'}} className={location.pathname === '/' ? 'active' : ''}><h1>SurfWatch</h1></Link>
+      <a href="#" onClick={handleSearchToggle} className={showSearch ? 'active' : ''}><img src="/assets/search.svg" alt="Search"/></a>
 
       {showSearch && (
         <div className="search-overlay">

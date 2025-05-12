@@ -1,6 +1,7 @@
 .home-container {
   padding: 20px;
   font-family: Arial, sans-serif;
+  margin-top: 2.5em;
 }
 
 section {
@@ -20,7 +21,6 @@ section {
 
 
 .checkin-button {
-  padding: 1px 20px;
   width: 100%;
   background: #293241;
   color: white;
@@ -32,7 +32,7 @@ section {
 
   font-style: normal;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 1em;
   text-align: center;
   text-transform: capitalize;
 }
@@ -45,7 +45,7 @@ section {
 }
 
 #surf-streak p{
-  font-size: 1.3vh;
+  font-size: .9em;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   margin-bottom: 0;
@@ -84,7 +84,7 @@ section {
 
 .forecast-placeholder {
   width: 100%;
-  height: 200px;
+  height: 20vh;
   background-color: #f0f0f0;
   border: 2px dashed #ccc;
   border-radius: 8px;

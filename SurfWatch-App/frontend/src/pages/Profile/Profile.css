@@ -1,5 +1,5 @@
 .profile-container{
-  margin: 4em 2vw;
+  margin: 4em 0;
 
 }
 
@@ -21,7 +21,7 @@
   margin:-2vw -3vw;
 }
 .add-session-btn{
-  padding: 1.3vh;
+  padding: 1rem;
   width: 100%;
   background: #3D5A80;
   color: white;
@@ -33,11 +33,49 @@
 
   font-style: normal;
   font-weight: 700;
-  font-size: 1.5vh;
+  font-size: 1.2rem;
   text-align: center;
   text-transform: capitalize;
 }
 
-.skill-container{
-  
+#skill-label{
+margin:0 0 1.5rem;
+font-weight: 500;
+font-size: .7rem;
+line-height: .7rem;
+letter-spacing: 0.1em;
+text-transform: uppercase;
+
+color: #293241;
+}
+
+.tab-row{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+
+  font-weight:700;
+  /* Summary */
+
+  text-align: center;
+  text-transform: capitalize;
+
+  color: #293241;
+
+  border-bottom: 1px solid rgba(28, 34, 44, 0.25);
+}
+
+#summary{
+  border-bottom: 3px solid #EE6C4D;
+  width: 50%;
+  padding: 1rem;
+
+}
+#sessions{
+  /* border-bottom: 3px solid #EE6C4D; */
+  width: 50%;
+  padding: 1rem;
+
 }

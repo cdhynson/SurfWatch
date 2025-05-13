@@ -1,13 +1,33 @@
-import React from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import BottomNav from "../../components/Navbars/BottomNav";
 import TopNav from "../../components/Navbars/TopNav";
 import "./Profile.css";
 
-function updateTab(){
 
-}
+
 
 function Profile() {
+  const [activeTab, setActiveTab] = useState(0);
+
+  const fetchSessions = useCallback(async () => {
+    console.log("Clicked Sessions")
+    return;
+  },)
+
+  const fetchSum = useCallback(async () => {
+    console.log("Clicked Summary")
+    return;
+  },)
+
+  useEffect(() => {
+    if (activeTab === 1) {
+      fetchSessions();
+    }
+    else{
+      fetchSum();
+    }
+  }, [activeTab, fetchSessions, fetchSum]);
+
   return (
     <>
       <TopNav />
@@ -28,16 +48,17 @@ function Profile() {
 
           <div className="skill-container">
           <img src="/assets/intermediate.svg" alt="Skill Bar" />
-            <p className="skill-label">INTERMEDIATE</p>
+            <p id="skill-label">INTERMEDIATE</p>
           </div>
 
           <button className="add-session-btn">Add Session</button>
         </div>
         
         <div className="tab-row">
-          <span className="summary" onClick={{}}>Summary</span>
-          <span className="sessions">Sessions</span>
+          <span id="summary" onClick={() => setActiveTab(0)}>Summary</span>
+          <span onClick={() => setActiveTab(1)} id="sessions">Sessions</span>
         </div>
+
         <div className="tab-content">
 
         </div>

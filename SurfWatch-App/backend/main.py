@@ -1,8 +1,30 @@
 import cv2
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Query, Form, Body, status
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse, HTMLResponse, RedirectResponse
+import mysql.connector as mysql
+from dotenv import load_dotenv
+import json
+import requests
+
+load_dotenv('../.env', override=True)
+
+dev_mode = os.environ.get('DEV_MODE', 'False').lower() == 'true'
+db_host = os.environ['MYSQL_HOST']
+db_user = os.environ['MYSQL_USER']
+db_pass = os.environ['MYSQL_PASSWORD']
+db_name = os.environ['MYSQL_DATABASE']
+db_port = os.environ['MYSQL_PORT']
+
+from SurfWatch-App.backend.database import (
+    setup_database,
+    get_user_by_email,
+    get_user_by_id,
+    create_session,
+    get_session,
+    delete_session,
+)
 
 app = FastAPI()
 camera = cv2.VideoCapture(0)

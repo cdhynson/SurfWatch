@@ -1,7 +1,6 @@
-cv2
+opencv-python
 uvicorn
 fastapi
-jinja2
 mysql-connector-python
 pandas
 python-dotenv

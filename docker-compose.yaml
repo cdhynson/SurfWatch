@@ -19,7 +19,7 @@ services:
    ports:
      - '8000:8000'
    volumes:
-     - ./app:/code/app
+     - ./app:/backend/main
    depends_on:
      db:
        condition: service_healthy

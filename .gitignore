@@ -1,2 +1,3 @@
 venv/
 Crowd Detection/Data/test videos/
+.env

@@ -1,0 +1,11 @@
+cv2
+uvicorn
+fastapi
+jinja2
+mysql-connector-python
+pandas
+python-dotenv
+python-multipart
+requests
+numpy
+pydantic

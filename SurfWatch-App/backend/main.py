@@ -3,6 +3,7 @@ import uvicorn
 from fastapi import FastAPI, Request, Query, Form, Body, status
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import StreamingResponse, JSONResponse, HTMLResponse, RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 import mysql.connector as mysql
 from dotenv import load_dotenv
 import json
@@ -12,7 +13,14 @@ from contextlib import asynccontextmanager
 import uuid
 
 # enable CORS in FastAPI app to allow requests from  React frontend
-from fastapi.middleware.cors import CORSMiddleware
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        await setup_database()
+        print("Database setup complete.")
+        yield
+    finally:
+        print("Shutdown completed.")
 
 app = FastAPI(lifespan=lifespan)
 
@@ -48,18 +56,6 @@ from app.database import (
     delete_session,
 )
 
-# setup the database on startup -G
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    try:
-        await setup_database()
-        print("Database setup complete.")
-        yield
-    finally:
-        print("Shutdown completed.")
-
-
-app = FastAPI(lifespan=lifespan)
 camera = cv2.VideoCapture(0)
 templates = Jinja2Templates(directory="app")
 def gen_frames():

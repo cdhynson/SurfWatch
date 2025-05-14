@@ -20,6 +20,7 @@ db_pass = os.environ['MYSQL_PASSWORD']
 db_name = os.environ['MYSQL_DATABASE']
 db_port = os.environ['MYSQL_PORT']
 
+# import the database functions
 from app.database import (
     setup_database,
     get_user_by_email,
@@ -29,6 +30,7 @@ from app.database import (
     delete_session,
 )
 
+# setup the database on startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
@@ -40,8 +42,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 camera = cv2.VideoCapture(0)
-templates = Jinja2Templates(directory="templates")
-
+templates = Jinja2Templates(directory="app")
 def gen_frames():
     while True:
         success, frame = camera.read()
@@ -57,7 +58,7 @@ def gen_frames():
 
 @app.get('/')
 def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse("camera.html", {"request": request})
 
 @app.get('/video_feed')
 def video_feed():

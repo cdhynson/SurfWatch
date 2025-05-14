@@ -11,12 +11,17 @@ function Profile() {
 
   const fetchSessions = useCallback(async () => {
     console.log("Clicked Sessions")
-    return;
+    return(
+    <>
+    
+    </>);
   },)
 
   const fetchSum = useCallback(async () => {
     console.log("Clicked Summary")
-    return;
+    return(
+      <>
+      </>);
   },)
 
   useEffect(() => {
@@ -55,8 +60,8 @@ function Profile() {
         </div>
         
         <div className="tab-row">
-          <span id="summary" onClick={() => setActiveTab(0)}>Summary</span>
-          <span onClick={() => setActiveTab(1)} id="sessions">Sessions</span>
+          <span id="summary" onClick={() => setActiveTab(0)}><p>Summary</p></span>
+          <span onClick={() => setActiveTab(1)} id="sessions"><p>Sessions</p></span>
         </div>
 
         <div className="tab-content">

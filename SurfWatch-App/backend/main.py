@@ -11,6 +11,20 @@ import os
 from contextlib import asynccontextmanager
 import uuid
 
+# enable CORS in FastAPI app to allow requests from  React frontend
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # React dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+ 
 # load env -G
 load_dotenv('../.env', override=True)
 

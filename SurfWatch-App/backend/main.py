@@ -7,6 +7,9 @@ import mysql.connector as mysql
 from dotenv import load_dotenv
 import json
 import requests
+import os
+from contextlib import asynccontextmanager
+import uuid
 
 load_dotenv('../.env', override=True)
 
@@ -17,7 +20,7 @@ db_pass = os.environ['MYSQL_PASSWORD']
 db_name = os.environ['MYSQL_DATABASE']
 db_port = os.environ['MYSQL_PORT']
 
-from SurfWatch-App.backend.database import (
+from app.database import (
     setup_database,
     get_user_by_email,
     get_user_by_id,
@@ -26,7 +29,16 @@ from SurfWatch-App.backend.database import (
     delete_session,
 )
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        await setup_database()
+        print("Database setup complete.")
+        yield
+    finally:
+        print("Shutdown completed.")
+
+app = FastAPI(lifespan=lifespan)
 camera = cv2.VideoCapture(0)
 templates = Jinja2Templates(directory="templates")
 

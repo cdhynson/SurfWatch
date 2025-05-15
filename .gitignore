@@ -3,3 +3,4 @@ Crowd Detection/Data/test videos/
 .env
 data/
 yolo*.pt
+Crowd Detection/Phase 2-Yolo Design/runs/

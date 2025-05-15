@@ -2,3 +2,4 @@ venv/
 Crowd Detection/Data/test videos/
 .env
 data/
+yolo*.pt

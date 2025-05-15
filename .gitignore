@@ -2,3 +2,5 @@ venv/
 Crowd Detection/Data/test videos/
 .env
 data/
+*.pt
+Crowd Detection/Phase 2-Yolo Design/runs/

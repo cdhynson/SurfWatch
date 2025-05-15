@@ -1,0 +1,5 @@
+train: C:/Users/chris/Desktop/SCHOOL/24-25/Spring/ECE 140B/SurfWatch/Crowd Detection/Phase 2-Yolo Design/images/train
+val: C:/Users/chris/Desktop/SCHOOL/24-25/Spring/ECE 140B/SurfWatch/Crowd Detection/Phase 2-Yolo Design/images/train
+
+nc: 1
+names: ['surfer']

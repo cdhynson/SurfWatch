@@ -49,7 +49,7 @@ function Login() {
   return (
     <>
       <TopNav/>    
-      <div className="login-container">
+      <div className="sign-container">
       <form onSubmit={handleLogin}>
         <h1>Welcome back!</h1>
         <div>
@@ -82,7 +82,7 @@ function Login() {
           <a className="signup-link" href="/signup">
           Sign up here!
         </a></span>
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <p style={{ color: 'red', marginTop: '1rem', fontWeight: '600'}}>{error}</p>}
       </form>
     </div>
     <BottomNav/>

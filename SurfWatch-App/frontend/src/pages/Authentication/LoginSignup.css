@@ -1,4 +1,4 @@
-.login-container {
+.sign-container {
   margin: 4em 0 0 0;
   display: flex;
   flex-direction: column;
@@ -10,7 +10,7 @@
 }
 
 /* Login container */
-.login-container form {
+.sign-container form {
   margin-top: 50%;
     background: white;
     padding: 20px;
@@ -21,7 +21,7 @@
 }
 
 /* Input fields */
-.login-container input {
+.sign-container input {
     width: 80%;
     padding: 10px;
     margin-top: 5px;
@@ -31,7 +31,7 @@
 }
 
 /* Labels */
-.login-container label {
+.sign-container label {
     font-weight: bold;
     display: block;
     text-align: left;
@@ -54,7 +54,7 @@ button:hover {
     background-color: #c64829;
 }
 
-.login-container span{
+.sign-container span{
   margin-top: 1em;
   display: flex;
   flex-direction: row;
@@ -62,7 +62,7 @@ button:hover {
   align-items: flex-end;
   gap: .5em;
 }
-.login-container p{
+.sign-container p{
   margin:0;
 }
 /* Signup link */

@@ -54,6 +54,18 @@ async def setup_database():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """,
+        "user_surf_sessions": """
+            CREATE TABLE IF NOT EXISTS user_surf_sessions (
+                user_id INT NOT NULL,
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                title VARCHAR(255),
+                location VARCHAR(255),
+                start DATETIME,
+                end DATETIME,
+                rating INT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        """,
     }
 
     try:
@@ -61,10 +73,12 @@ async def setup_database():
         cursor = connection.cursor()
 
         # Drop tables if they exist
-        for table_name in table_schemas.keys():
+        # Drop tables in correct order
+        for table_name in ["user_surf_sessions", "sessions", "users"]:
             logger.info(f"Dropping table {table_name} if exists...")
             cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
             connection.commit()
+
 
         # Create tables
         for table_name, create_query in table_schemas.items():
@@ -112,7 +126,17 @@ async def get_user_by_id(user_id: int) -> Optional[dict]:
     finally:
         cursor.close()
         connection.close()
-
+        
+async def get_surf_session_by_id(user_id: int) -> Optional[dict]:
+    """Retrieve user's surf session from database by ID"""
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    try:
+        cursor.execute("SELECT * FROM user_surf_sessions WHERE user_id = %s", (user_id))
+        return cursor.fetchone()
+    finally:
+        cursor.close()
+        connection.close()
 
 async def create_session(email: str, session_id: str) -> bool:
     """Create a new session in the database."""

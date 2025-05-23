@@ -13,38 +13,38 @@ function Login() {
   const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
+  e.preventDefault();
+  setError("");
 
-    try {
-      const response = await fetch("http://localhost:8000/login", {
-        method: "POST",
-        credentials: "include", // Important for cookies
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          email,
-          password,
-        }),
-      });
+  try {
+    const response = await fetch("http://localhost:8000/login", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        email,
+        password,
+      }),
+    });
 
-      if (response.redirected) {
-        // Extract the username from redirect URL
-        const redirectedTo = new URL(response.url);
-        const parts = redirectedTo.pathname.split("/");
-        const userEmail = parts[2];
-        navigate(`/user/${userEmail}`);
-      } else {
-        const errorText = await response.text();
-        setError("Login failed: Invalid credentials or server error.");
-        console.error(errorText);
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Login failed: Could not connect to server.");
+    if (response.redirected) {
+      const redirectedTo = new URL(response.url);
+      const parts = redirectedTo.pathname.split("/");
+      const userEmail = parts[2];
+      navigate(`/`); // Use navigate instead of window.location.href
+    } else {
+      const errorText = await response.text();
+      setError("Login failed: Invalid credentials or server error.");
+      console.error(errorText);
     }
-  };
+  } catch (err) {
+    console.error(err);
+    setError("Login failed: Could not connect to server.");
+  }
+};
+
 
   return (
     <>

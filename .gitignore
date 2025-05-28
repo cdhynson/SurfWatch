@@ -4,3 +4,5 @@ Crowd Detection/Data/test videos/
 *.pt
 Crowd Detection/Phase 2-Yolo Design/runs/
 node_modules/
+Data/
+*.zip

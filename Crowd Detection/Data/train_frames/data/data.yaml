@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['surfer']
+
+roboflow:
+  workspace: surfline
+  project: surfer-spotting
+  version: 2
+  license: Public Domain
+  url: https://universe.roboflow.com/surfline/surfer-spotting/dataset/2

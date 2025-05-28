@@ -2,6 +2,7 @@
   margin: 4em 0 0 0;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
   height: 100vh;
   background-image: url("../../../public/assets/background.avif");
@@ -11,7 +12,7 @@
 
 /* Login container */
 .sign-container form {
-  margin-top: 50%;
+  margin-top: -20vh;
     background: white;
     padding: 20px;
     border-radius: 10px;
@@ -38,7 +39,7 @@
 }
 
 /* Button */
-button {
+.sign-container button {
     width: 100%;
     padding: .7em;
     background-color: #f65b34;
@@ -50,7 +51,7 @@ button {
     cursor: pointer;
 }
 
-button:hover {
+.sign-container button:hover {
     background-color: #c64829;
 }
 

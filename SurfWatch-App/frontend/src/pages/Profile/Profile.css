@@ -14,11 +14,13 @@
 
 .pfp-section{
  margin-bottom: 0;
+ width: 100%;
+
 }
 
 .edit-pfp{
   all: unset;
-  margin:-2vw -3vw;
+  margin:-20px -20px;
 }
 .add-session-btn{
   padding: 1rem;
@@ -36,6 +38,10 @@
   font-size: 1.2rem;
   text-align: center;
   text-transform: capitalize;
+}
+
+.add-session-btn:hover{
+  background: #273a53;
 }
 
 #skill-label{
@@ -66,22 +72,49 @@ color: #293241;
   border-bottom: 1px solid rgba(28, 34, 44, 0.25);
 }
 
-#summary{
-  border-bottom: 3px solid #EE6C4D;
+.tab-row span {
+  padding: 0;
   width: 50%;
+  cursor: pointer;
+  color: #606060;
+  border-bottom: 3px solid white;
+  transition: all 0.2s ease;
 }
-#sessions{
-  /* border-bottom: 3px solid #EE6C4D; */
-  width: 50%;
-  
+
+.tab-row .active-tab {
+  color: #1C222C;
+  border-bottom: 3px solid #EE6C4D;
 }
 
 .tab-row p{
   cursor: pointer;
 }
 
-.tab-content{
+.tab-page {
+  padding: 24px;
+  display: none;
+}
+.tab-page.active {
+  margin-top: 0;
+  padding: 0;
+  display: block;
+}
+
+.tab-page.active p{
+  margin:0;
+}
+
+.sessions-content h3{
+  margin:0;
+}
+
+.summary-content h3{
+  margin:0;
+}
+
+#tab-content{
   margin-top: 0;
   background-color: #EDEDED;
-  height: 100vh;
+  min-height: 50vh;
+  height: auto;
 }

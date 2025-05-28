@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import TopNav from '../../components/Navbars/TopNav';
 import BottomNav from '../../components/Navbars/BottomNav';
+import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -18,28 +19,34 @@ const Signup = () => {
       [e.target.name]: e.target.value
     }));
   };
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  setError(null);
 
-    try {
-      const response = await fetch('http://localhost:8000/signup', {
-        method: 'POST',
-        body: new URLSearchParams(formData),
-        credentials: 'include', // Important for cookies
-      });
+  try {
+    const response = await fetch("http://localhost:8000/signup", {
+      method: "POST",
+      body: new URLSearchParams(formData),
+      credentials: "include",
+    });
 
-      if (response.redirected) {
-        window.location.href = response.url;
-      } else if (!response.ok) {
-        const text = await response.text();
-        setError("Email is taken, please try a different one");
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Email is taken, please try a different one.");
+    if (response.redirected) {
+      const redirectedTo = new URL(response.url);
+      const parts = redirectedTo.pathname.split("/");
+      const userEmail = parts[2];
+      navigate(`/`); // Navigate using react-router
+    } else if (!response.ok) {
+      const text = await response.text();
+      setError("Email is taken, please try a different one");
     }
-  };
+  } catch (err) {
+    console.error(err);
+    setError("Email is taken, please try a different one.");
+  }
+};
+
 
   return (
     <>

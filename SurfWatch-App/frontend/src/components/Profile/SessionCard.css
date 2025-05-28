@@ -1,0 +1,73 @@
+.session-card {
+  background-color: white;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.063);
+  font-family: sans-serif;
+}
+
+.session-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.session-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.session-rating .star {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #e0e0e0;
+}
+
+.session-rating .star.filled {
+  color: #EE6C4D;
+}
+
+.session-details {
+  margin-top: 8px;
+}
+
+.session-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.session-line img {
+  width: 18px;
+  height: 18px;
+}
+
+.session-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  width: 48%;
+  margin-bottom: 12px;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.stat-value {
+  margin: 0;
+  font-weight: bold;
+  font-size: 1rem;
+}

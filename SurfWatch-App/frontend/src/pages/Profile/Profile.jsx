@@ -1,37 +1,47 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState } from "react";
 import BottomNav from "../../components/Navbars/BottomNav";
 import TopNav from "../../components/Navbars/TopNav";
+import SessionCard from "../../components/Profile/SessionCard";
+
 import "./Profile.css";
 
-
-
-
 function Profile() {
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(0); // 0 = Summary, 1 = Sessions
 
-  const fetchSessions = useCallback(async () => {
-    console.log("Clicked Sessions")
-    return(
-    <>
-    
-    </>);
-  },)
-
-  const fetchSum = useCallback(async () => {
-    console.log("Clicked Summary")
-    return(
-      <>
-      </>);
-  },)
-
-  useEffect(() => {
-    if (activeTab === 1) {
-      fetchSessions();
+  const renderTabContent = () => {
+    if (activeTab === 0) {
+      return (
+        <div className="summary-content">
+        </div>
+      );
+    } else {
+      return (
+        // Placeholder values for now
+        <div className="sessions-content">
+          <SessionCard
+            title="Surfed with Kat"
+            dateTime="Today from 10:38 AM to 1:13 PM"
+            location="La Jolla Shores"
+            waveHeight="2 - 3ft+"
+            tide="3.6ft"
+            wind="5kts SSE"
+            temperature="64°F"
+            rating={3}
+          />
+          <SessionCard
+            title="Surfed with a Shark"
+            dateTime="Yesterday from 10:38 AM to 1:13 PM"
+            location="Del Mar"
+            waveHeight="2 - 3ft+"
+            tide="3.6ft"
+            wind="5kts SSE"
+            temperature="64°F"
+            rating={4}
+          />
+        </div>
+      );
     }
-    else{
-      fetchSum();
-    }
-  }, [activeTab, fetchSessions, fetchSum]);
+  };
 
   return (
     <>
@@ -39,33 +49,47 @@ function Profile() {
       <div className="profile-container">
         <div className="profile-header">
           <span id="surf-streak">
-                <img src="/assets/fire.svg" alt="Flame Icon" />
-                <p> 3 DAY SURFING STREAK</p>
+            <img src="/assets/fire.svg" alt="Flame Icon" />
+            <p>3 DAY SURFING STREAK</p>
           </span>
 
           <div className="pfp-section">
-            <div className="pfp"/>
-            <img src="/assets/pfp.svg" alt="Flame Icon" />
-            <button className="edit-pfp"><img src="/assets/edit.svg" alt="Edit" /></button>
+            <div className="pfp" />
+            <img src="/assets/pfp.svg" alt="Profile" />
+            <button className="edit-pfp">
+              <img src="/assets/edit.svg" alt="Edit" />
+            </button>
           </div>
 
           <h2 className="user-name">Jane Doe</h2>
 
           <div className="skill-container">
-          <img src="/assets/intermediate.svg" alt="Skill Bar" />
+            <img src="/assets/intermediate.svg" alt="Skill Bar" />
             <p id="skill-label">INTERMEDIATE</p>
           </div>
 
           <button className="add-session-btn">Add Session</button>
         </div>
-        
+
         <div className="tab-row">
-          <span id="summary" onClick={() => setActiveTab(0)}><p>Summary</p></span>
-          <span onClick={() => setActiveTab(1)} id="sessions"><p>Sessions</p></span>
+          <span
+            id="summary"
+            className={activeTab === 0 ? "active-tab" : ""}
+            onClick={() => setActiveTab(0)}
+          >
+            <p>Summary</p>
+          </span>
+          <span
+            id="sessions"
+            className={activeTab === 1 ? "active-tab" : ""}
+            onClick={() => setActiveTab(1)}
+          >
+            <p>Sessions</p>
+          </span>
         </div>
 
-        <div className="tab-content">
-
+        <div id="tab-content">
+          {renderTabContent()}
         </div>
       </div>
       <BottomNav />

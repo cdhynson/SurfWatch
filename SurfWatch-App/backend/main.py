@@ -17,10 +17,12 @@ from dotenv import load_dotenv
 from mysql.connector import Error
 from pydantic import BaseModel
 from retry_requests import retry
+from passlib.hash import bcrypt
+from jose import jwt, JWTError
 
 # FastAPI Components
 from fastapi import (
-    FastAPI, Request, Query, Form, Body, Depends,
+    FastAPI, Request, Query, Form, Body, Depends, Security,
     status, HTTPException
 )
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,28 +31,32 @@ from fastapi.responses import (
     HTMLResponse, RedirectResponse
 )
 from fastapi.templating import Jinja2Templates
-
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 
 # enable CORS in FastAPI app to allow requests from  React frontend
-@asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
-        await setup_database()
+        setup_database()
         print("Database setup complete.")
         yield
     finally:
         print("Shutdown completed.")
 
+# JWT
+SECRET_KEY = "supersecretkey" #Replace later
+security = HTTPBearer()
+
 app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React dev server
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
  
 # load env -G
@@ -91,7 +97,7 @@ def gen_frames():
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
-@app.get('/')
+@app.get('/api/camera')
 def index(request: Request):
     return templates.TemplateResponse("camera.html", {"request": request})
 
@@ -99,131 +105,126 @@ def index(request: Request):
 def video_feed():
     return StreamingResponse(gen_frames(), media_type='multipart/x-mixed-replace; boundary=frame')
 
-
-# static file helpers
-# used for redirect responses, look at line 123 for example -G
-def read_html(file_path: str) -> str:
-    with open(file_path, "r") as f:
-        return f.read()
     
 # ---------------------
 # User Auth. Endpoints 
 # ---------------------
 
-async def get_current_user(request: Request):
-    session_id = request.cookies.get("sessionId")
-    if not session_id:
-        raise HTTPException(status_code=401, detail="No session cookie.")
-    
-    session = await get_session(session_id)
-    if not session:
-        raise HTTPException(status_code=401, detail="Invalid session.")
+class SignUp(BaseModel):
+    username: str
+    email: str
+    password: str
+    location: str
 
-    user = await get_user_by_email(session["email"])
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found.")
+class Login(BaseModel):
+    email: str
+    password: str
 
-    return user
+def get_current_user(token: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    try:
+        payload = jwt.decode(token.credentials, SECRET_KEY, algorithms=["HS256"])
+        return payload            
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
-# signup page -G
-@app.get('/signup')
-def signup(request: Request):
-    with open('app/signup.html') as html:
-        return HTMLResponse(html.read())
 
 # post signup credentials to sql database -G
 @app.post('/signup')
-async def post_signup(request: Request):
-    form_data = await request.form()
-    username = form_data.get("username")
-    email = form_data.get("email")
-    password = form_data.get("password")
-    location = form_data.get("location")
-
-    existing_user = await get_user_by_email(email)
-    if existing_user: 
-        raise HTTPException(status_code=400, detail="User already exists.")
-
+def signup(request: SignUp):
+    print("Received signup request:", request.dict())
     db = get_db_connection()
     cursor = db.cursor()
+    cursor.execute("SELECT * FROM users where email = %s", (request.email,))
+    if cursor.fetchone():
+        db.close()
+        raise HTTPException(status_code=400, detail="Email already registered")
+    cursor.execute("SELECT * FROM users where username = %s", (request.username,))
+    if cursor.fetchone():
+        db.close()
+        raise HTTPException(status_code=400, detail="Username already taken")
+    
+    hashed_password = bcrypt.hash(request.password)
     cursor.execute(
         "INSERT INTO users (username, email, password, location) VALUES (%s, %s, %s, %s)",
-        (username, email, password, location),
+        (request.username, request.email, hashed_password, request.location),
     )
     db.commit()
     db.close()
+    
+    token_data = {
+        "email": request.email,
+        "username": request.username,
+        "location": request.location
+    }
+    token = jwt.encode(token_data, SECRET_KEY, algorithm="HS256")
 
-    new_session_id = str(uuid.uuid4())
-    await create_session(email, new_session_id)
-
-    response = JSONResponse(content={"message": "Signup successful."})
-    response.set_cookie(key="sessionId", value=new_session_id, httponly=True)
-    return response
-
-# error page if user exists already, idk i used this in my final project for 140a -G
-def get_error_html(email: str) -> str:
-    error_html = read_html("app/error.html")
-    return error_html.replace("{email}", email)
-
-# get the login page with session ids and cookies -G
-@app.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request):
-    """Show login if not logged in, or redirect to profile page"""
-    # TODO: 3. check if sessionId is in attached cookies and validate it
-    # if all valid, redirect to /user/{username}
-    # if not, show login page
-    session_id = request.cookies.get("sessionId")
-    if session_id: 
-        session = await get_session(session_id)
-        if session:
-            return RedirectResponse(url=f"/user/{session['email']}", status_code=status.HTTP_302_FOUND)
-    return HTMLResponse(read_html("app/login.html"))
+    return {"msg": "User created", "token": token}
 
 # query the database for the user to log in -G
 @app.post("/login")
-async def login(request: Request):
-    form_data = await request.form()
-    email = form_data.get("email")
-    password = form_data.get("password")
+def login(request: Login):
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users WHERE email = %s", (request.email,))
+    db_user = cursor.fetchone()
+    db.close()
 
-    user = await get_user_by_email(email)
-    if user is None or user["password"] != password:
-        raise HTTPException(status_code=400, detail="Invalid credentials.")
+    if not db_user or not bcrypt.verify(request.password, db_user["password"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    token_data = {
+        "email": db_user["email"],
+        "username": db_user["username"],
+        "location": db_user["location"]
+        }
+    token = jwt.encode(token_data, SECRET_KEY, algorithm="HS256")
 
-    new_session_id = str(uuid.uuid4())
-    await create_session(user["email"], new_session_id)
-
-    response = JSONResponse(content={"message": "Login successful."})
-    response.set_cookie(key="sessionId", value=new_session_id, httponly=True)
-    return response
+    return {"token": token}
 
 # ---------------------
 # Profile Endpoints
 # ---------------------
 
-class SessionsRequest(BaseModel):
+class SessionsModel(BaseModel):
     title: str
     location: str
     rating: int
     start: str
     end: str
 
+@app.get("/api/user")
+def get_me(current_user: dict = Depends(get_current_user)):
+    current_email = current_user["email"]
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT username, email, location FROM users WHERE email = %s", (current_email,))
+    row = cursor.fetchone()
+    cursor.close()
+    db.close()
+    if not row:
+        raise HTTPException(status_code=404, detail=("User not found: %s", (current_email,)))
+    return {
+    "username": row["username"],
+    "email": row["email"],
+    "location": row["location"],
+    }
 
-@app.get("/api/profile/sessions")
-async def get_sessions(current_user: dict = Depends(get_current_user)):
+
+@app.get("/api/profile/session")
+def get_sessions(current_user: dict = Depends(get_current_user)):
     query = (
         "SELECT id, title, location, start, end, rating "
         "FROM user_surf_sessions WHERE user_id = %s"
     )
-    params = [current_user["id"]]
+    params = [current_user["email"]]
 
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
         cursor.execute(query, params)
         results = cursor.fetchall()
         cursor.close()
-        connection.close()
+        db.close()
 
         # Convert datetime objects to ISO strings
         for record in results:
@@ -232,33 +233,35 @@ async def get_sessions(current_user: dict = Depends(get_current_user)):
             if isinstance(record.get("end"), datetime):
                 record["end"] = record["end"].isoformat()
 
-        return {"sessions": results}
+        return results
     except Error as e:
         print("Database error:", str(e))
         raise HTTPException(status_code=500, detail="Database query error")
 
 
 @app.post("/api/profile/session")
-async def post_session(
-    request: Request,
+def add_session(
+    request: SessionsModel,
     current_user: dict = Depends(get_current_user)
 ):
-    form_data = await request.form()
-    title = form_data.get("title")
-    location = form_data.get("location")
-    rating = form_data.get("rating")
-    print(f"Received form data: title={title}, location={location}, rating={rating}")
-
     db = get_db_connection()
-    cursor = db.cursor()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT id FROM users WHERE email = %s", (current_user["email"],))
+    user = cursor.fetchone()
+    if not user:
+        db.close()
+        raise HTTPException(status_code=401, detail="User not found")
+    
     cursor.execute(
         "INSERT INTO user_surf_sessions (title, location, ratings, user_id) VALUES (%s, %s, %s, %s)",
-        (title, location, rating, current_user["id"]),
+        (request.title, request.location, request.rating, user["id"]),
     )
     db.commit()
+    id = cursor.lastrowid
     db.close()
 
-    return RedirectResponse(url="/profile", status_code=status.HTTP_302_FOUND)
+    return {"id": id, "title": request.title, "rating": request.rating}
+
 
 
 # ------------------------
@@ -274,9 +277,8 @@ class WeatherRequest(BaseModel):
 
 
 @app.post("/api/weather")
-async def get_weather(
+def get_weather(
     weather_req: WeatherRequest,
-    current_user: dict = Depends(get_current_user)
 ):
     try:
         cache_session = requests_cache.CachedSession('.cache', expire_after=3600)

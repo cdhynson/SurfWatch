@@ -1,83 +1,128 @@
-import React, { useState } from 'react';
-import TopNav from '../../components/Navbars/TopNav';
-import BottomNav from '../../components/Navbars/BottomNav';
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-const Signup = () => {
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    location: '',
-  });
+import TopNav from "../../components/Navbars/TopNav";
+import BottomNav from "../../components/Navbars/BottomNav";
+
+function Signup() {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [location, setLocation] = useState("");
 
   const [error, setError] = useState(null);
-
-  const handleChange = (e) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-  };
   const navigate = useNavigate();
+  const API_BASE = process.env.REACT_APP_API_URL;
+;
 
-  const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError(null);
+  const handleSignup = async (e) => {
+     e.preventDefault();
+    try {
+      await axios.post(`${API_BASE}/signup`, {
+        username,
+        email,
+        password,
+        location,
+      });
 
-  try {
-    const response = await fetch("http://localhost:8000/signup", {
-      method: "POST",
-      body: new URLSearchParams(formData),
-      credentials: "include",
-    });
+      const loginRes = await axios.post(`${API_BASE}/login`, {
+        email,
+        password,
+      });
 
-    if (response.redirected) {
-      const redirectedTo = new URL(response.url);
-      const parts = redirectedTo.pathname.split("/");
-      const userEmail = parts[2];
-      navigate(`/`); // Navigate using react-router
-    } else if (!response.ok) {
-      const text = await response.text();
-      setError("Email is taken, please try a different one");
+      localStorage.setItem("token", loginRes.data.token); // Save token
+      console.log("Succesful signup");
+      navigate("/profile");
+    } catch (err) {   
+      console.log("Attempted to post to:", `${API_BASE}/signup`, {
+        username,
+        email,
+        password,
+        location,
+      })  
+      console.log("Error:",err);
+      setError(err);
     }
-  } catch (err) {
-    console.error(err);
-    setError("Email is taken, please try a different one.");
-  }
-};
+  };
 
+  
 
   return (
     <>
-    <TopNav/>
-    <div className="sign-container">
-      <form onSubmit={handleSubmit}>
-        <h2>Welcome!</h2>
-        {['username', 'email', 'password', 'location'].map((field) => (
-          <div className="input-group" key={field}>
-            <label htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
+      <TopNav />
+      <div className="sign-container">
+        <form onSubmit={handleSignup}>
+          <h2>Welcome!</h2>
+          <div>
+            <label htmlFor="username">Username:</label>
             <input
-              type={field === 'email' ? 'email' : field === 'password' ? 'password' : 'text'}
-              id={field}
-              name={field}
-              value={formData[field]}
-              onChange={handleChange}
+              type="text"
+              id="username"
+              name="username"
+              placeholder="Enter username"
               required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
           </div>
-        ))}
-        <button type="submit" className="btn">Sign Up</button>
-        <span className="login-link">
-       <p>Already have an account?</p> <a className="signup-link" href="/login">Login here</a>
-      </span>
-      {error && <p style={{ color: 'red', marginTop: '1rem', fontWeight: '600'}}>{error}</p>}
-      </form>
-      
-    </div>
-    <BottomNav/>
+          <div>
+            <label htmlFor="email">Email:</label>
+            <input
+              type="text"
+              id="email"
+              name="email"
+              placeholder="Enter email address"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor="password">Password:</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Enter password "
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor="location">Location:</label>
+            <input
+              type="location"
+              id="location"
+              name="location"
+              placeholder="Ex: La Jolla, CA"
+              required
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+          </div>
+          <button type="submit" className="btn">
+            Sign Up
+          </button>
+          <span className="login-link">
+            <p>Already have an account?</p>{" "}
+            <a className="signup-link" href="/login">
+              Login here
+            </a>
+          </span>
+          {error && (
+            <p style={{ color: "red", marginTop: "1rem", fontWeight: "600" }}>
+              {error.response?.data?.detail || error.message || "Signup failed"}
+            </p>
+          )}
+        </form>
+      </div>
+      <BottomNav />
     </>
   );
-};
+}
 
 export default Signup;
+
+

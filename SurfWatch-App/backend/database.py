@@ -25,13 +25,13 @@ class DatabaseConnectionError(Exception):
 def get_db_connection():
     """Returns a new database connection."""
     try:
-        return mysql.connect(host=db_host, database=db_name, user=db_user, passwd=db_pass, port=db_port)
+        return mysql.connect(host=db_host, database=db_name, user=db_user, passwd=db_pass, port=int(db_port))
     except Error as e:
         logger.error(f"Error connecting to MySQL: {e}")
         raise DatabaseConnectionError(f"Unable to connect to the database: {e}")
 
 
-async def setup_database():
+def setup_database():
     """Creates necessary tables and populates initial user data if provided."""
     connection = None
     cursor = None
@@ -42,7 +42,7 @@ async def setup_database():
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 username VARCHAR(255) NOT NULL UNIQUE,
                 email VARCHAR(255) NOT NULL UNIQUE,
-                password VARCHAR(255) NOT NULL,
+                password TEXT,
                 location VARCHAR(255) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -127,13 +127,13 @@ async def get_user_by_id(user_id: int) -> Optional[dict]:
         cursor.close()
         connection.close()
         
-async def get_surf_session_by_id(user_id: int) -> Optional[dict]:
-    """Retrieve user's surf session from database by ID"""
+async def get_surf_sessions_for_user(user_id: int) -> list[dict]:
+    """Retrieve all surf sessions for a given user."""
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
     try:
-        cursor.execute("SELECT * FROM user_surf_sessions WHERE user_id = %s", (user_id))
-        return cursor.fetchone()
+        cursor.execute("SELECT * FROM user_surf_sessions WHERE user_id = %s", (user_id,))
+        return cursor.fetchall()  # returns a list of dicts
     finally:
         cursor.close()
         connection.close()

@@ -1,15 +1,36 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import BottomNav from "../../components/Navbars/BottomNav";
 import TopNav from "../../components/Navbars/TopNav";
+import "./Settings.css";
 
-import "./Settings.css"
+function Settings() {
+  const navigate = useNavigate();
 
-function Settings(){
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+    }
+  }, [navigate]);
 
-  return (<>
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
 
-<BottomNav/>
-  </>);
+  return (
+    <>
+      <TopNav />
+      <div className="settings-container">
+        <h1>Settings</h1>
+        <button onClick={handleLogout} className="logout-button">
+          Log Out
+        </button>
+      </div>
+      <BottomNav />
+    </>
+  );
 }
 
 export default Settings;

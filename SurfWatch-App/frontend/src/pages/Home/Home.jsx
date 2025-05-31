@@ -7,7 +7,19 @@ import "./Home.css";
 
 function Home() {
 
-  function updateStreak(){
+  function startSession() {
+    
+  return (
+    <div className="session-modal">
+      <form>
+
+      </form>
+    </div>
+  )
+
+  }
+
+  function endSession() {
 
   }
 
@@ -20,8 +32,8 @@ function Home() {
           <span id="surf-streak">
             <img src="/assets/fire.svg" alt="Flame Icon" />
             <p> 3 DAY SURFING STREAK</p></span>
-          <button className="checkin-button" onClick={updateStreak}>
-            <h2>Check In</h2>
+          <button className="checkin-button" onClick={startSession}>
+            <h2>Start Session</h2>
           </button>
         </section>
   

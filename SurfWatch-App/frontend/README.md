@@ -3,6 +3,8 @@
 Before attempting to run application, make sure to run the following commands:
 
 ### `npm install react-router-dom`
+### `npm install axios`
+
 
 ## Starting up application
 

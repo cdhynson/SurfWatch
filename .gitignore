@@ -6,3 +6,4 @@ Crowd Detection/Phase 2-Yolo Design/runs/
 node_modules/
 /data 
 *.zip
+*.mp4

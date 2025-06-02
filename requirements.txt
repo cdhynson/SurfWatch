@@ -11,5 +11,7 @@ requests
 requests-cache
 retry-requests
 uvicorn
+passlib
+python-jose
 
 

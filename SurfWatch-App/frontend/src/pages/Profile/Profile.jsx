@@ -11,6 +11,7 @@ function Profile() {
   const [activeTab, setActiveTab] = useState(0); // 0 = Summary, 1 = Sessions
   const [showModal, setShowModal] = useState(false);
 
+  const [sessions, setSessions] = useState([]);
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -23,42 +24,55 @@ function Profile() {
   const navigate = useNavigate();
   const API_BASE = process.env.REACT_APP_API_URL;
 
-
   useEffect(() => {
     axios
       .get(`${API_BASE}/api/profile/session`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      .then((res) => setTitle(res.data))
+      .then((res) => setSessions(res.data))
       .catch(() => navigate("/login"));
 
     axios
       .get(`${API_BASE}/api/user`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      .then((res)=> {
+      .then((res) => {
         console.log(res.data.username);
-        setUsername(res.data.username);})
+        setUsername(res.data.username);
+      });
   }, []);
 
-  const handleSession = () => {
+  const handleSession = (e) => {
+    e.preventDefault();
+    console.log("Start-end:", endTime, startTime);
+    console.log("TOKEN BEING SENT:", token);
+
     axios
-      .post(`${API_BASE}/api/profile/session`, {
-        title: title,
-        location: location,
-        rating: rating,
-        start: startTime,
-        end: endTime,
-      })
+      .post(
+        `${API_BASE}/api/profile/session`,
+        {
+          title: title,
+          location: location,
+          rating: rating,
+          start: startTime,
+          end: endTime,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+        }
+      )
       .then((res) => {
-        setTitle([...title, res.data]);
+        setSessions([...sessions, res.data]);
         setShowModal(false);
+        setTitle("");
         setLocation("");
         setStartTime("");
         setEndTime("");
         setRating("");
       })
-      .catch(() => alert("Failed to add sessions"));
+      .catch(() => alert("Failed to add sessions:"));
   };
 
   const renderTabContent = () => {
@@ -66,28 +80,16 @@ function Profile() {
       return <div className="summary-content"></div>;
     } else {
       return (
-        // Placeholder values for now
         <div className="sessions-content">
-          <SessionCard
-            title="Surfed with Kat"
-            dateTime="Today from 10:38 AM to 1:13 PM"
-            location="La Jolla Shores"
-            waveHeight="2 - 3ft+"
-            tide="3.6ft"
-            wind="5kts SSE"
-            temperature="64°F"
-            rating={3}
-          />
-          <SessionCard
-            title="Surfed with a Shark"
-            dateTime="Yesterday from 10:38 AM to 1:13 PM"
-            location="Del Mar"
-            waveHeight="2 - 3ft+"
-            tide="3.6ft"
-            wind="5kts SSE"
-            temperature="64°F"
-            rating={4}
-          />
+          {sessions.map((session, idx) => (
+            <SessionCard
+              key={idx}
+              title={session.title}
+              dateTime={`${session.start} to ${session.end}`}
+              location={session.location}
+              rating={session.rating}
+            />
+          ))}
         </div>
       );
     }
@@ -147,8 +149,15 @@ function Profile() {
       </div>
 
       {showModal && (
-        <div className="session-modal">
-          <form onSubmit={handleSession}>
+        <div className="session-modal" onClick={() => setShowModal(false)}>
+          <form onSubmit={handleSession} onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="close-modal"
+              onClick={() => setShowModal(false)}
+            >
+              x
+            </button>
             <h1>Add New Session</h1>
             <div>
               <label htmlFor="title">Title</label>
@@ -185,7 +194,7 @@ function Profile() {
               />
             </div>
             <div>
-              <label htmlFor="end">From</label>
+              <label htmlFor="end">To</label>
               <input
                 type="datetime-local"
                 id="end"
@@ -196,20 +205,19 @@ function Profile() {
             </div>
             <div>
               <label htmlFor="rating">Rating</label>
-              <select
-                id="rating"
-                name="rating"
-                value={title}
-                onChange={(e) => setRating(e.target.value)}
-              >
-                <option value="1">Lower Trestles</option>
-                <option value="2">Scripps</option>
-                <option value="3">Lower Trestles</option>
-                <option value="4">Scripps</option>
-                <option value="5">Scripps</option>
-              </select>
+              <div className="star-rating">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    className={star <= rating ? "star filled" : "star"}
+                    onClick={() => setRating(star)}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
             </div>
-            <input type="submit" onSubmit={handleSession} />
+            <input type="submit" value="Submit" />
           </form>
         </div>
       )}

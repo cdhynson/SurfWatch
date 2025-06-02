@@ -209,34 +209,39 @@ def get_me(current_user: dict = Depends(get_current_user)):
     "location": row["location"],
     }
 
+from fastapi import Depends, HTTPException
+from datetime import datetime
 
 @app.get("/api/profile/session")
 def get_sessions(current_user: dict = Depends(get_current_user)):
-    query = (
-        "SELECT id, title, location, start, end, rating "
-        "FROM user_surf_sessions WHERE user_id = %s"
-    )
-    params = [current_user["email"]]
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
 
-    try:
-        db = get_db_connection()
-        cursor = db.cursor(dictionary=True)
-        cursor.execute(query, params)
-        results = cursor.fetchall()
+    # get the user's ID from their email
+    cursor.execute("SELECT id FROM users WHERE email = %s", (current_user["email"],))
+    user = cursor.fetchone()
+    if not user:
         cursor.close()
         db.close()
+        raise HTTPException(status_code=404, detail="User not found")
 
-        # Convert datetime objects to ISO strings
-        for record in results:
-            if isinstance(record.get("start"), datetime):
-                record["start"] = record["start"].isoformat()
-            if isinstance(record.get("end"), datetime):
-                record["end"] = record["end"].isoformat()
+    # use user['id'] to fetch sessions
+    cursor.execute(
+        "SELECT id, title, location, start, end, rating FROM user_surf_sessions WHERE user_id = %s",
+        (user["id"],),
+    )
+    results = cursor.fetchall()
+    cursor.close()
+    db.close()
 
-        return results
-    except Error as e:
-        print("Database error:", str(e))
-        raise HTTPException(status_code=500, detail="Database query error")
+    # convert datetime objects to strings
+    for record in results:
+        if isinstance(record.get("start"), datetime):
+            record["start"] = record["start"].isoformat()
+        if isinstance(record.get("end"), datetime):
+            record["end"] = record["end"].isoformat()
+
+    return results
 
 
 @app.post("/api/profile/session")
@@ -253,8 +258,8 @@ def add_session(
         raise HTTPException(status_code=401, detail="User not found")
     
     cursor.execute(
-        "INSERT INTO user_surf_sessions (title, location, ratings, user_id) VALUES (%s, %s, %s, %s)",
-        (request.title, request.location, request.rating, user["id"]),
+    "INSERT INTO user_surf_sessions (title, location, start, end, rating, user_id) VALUES (%s, %s, %s, %s, %s, %s)",
+    (request.title, request.location, request.start, request.end, request.rating, user["id"]),
     )
     db.commit()
     id = cursor.lastrowid

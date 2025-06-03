@@ -5,8 +5,10 @@ numpy
 openmeteo-requests
 opencv-python
 pandas
+passlib[bcrypt]
 pydantic
 python-dotenv
+python-jose 
 requests
 requests-cache
 retry-requests

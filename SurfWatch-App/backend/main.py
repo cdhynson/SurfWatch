@@ -5,6 +5,7 @@ import uuid
 import traceback
 from datetime import datetime
 from contextlib import asynccontextmanager
+from typing import List
 
 # Third-Party Libraries
 import cv2
@@ -181,17 +182,6 @@ def login(request: Login):
 
     return {"token": token}
 
-# ---------------------
-# Profile Endpoints
-# ---------------------
-
-class SessionsModel(BaseModel):
-    title: str
-    location: str
-    rating: int
-    start: str
-    end: str
-
 @app.get("/api/user")
 def get_me(current_user: dict = Depends(get_current_user)):
     current_email = current_user["email"]
@@ -209,15 +199,35 @@ def get_me(current_user: dict = Depends(get_current_user)):
     "location": row["location"],
     }
 
-from fastapi import Depends, HTTPException
-from datetime import datetime
+# ---------------------
+# Profile Endpoints
+# ---------------------
 
-@app.get("/api/profile/session")
+class SessionsModel(BaseModel):
+    title: str
+    location: str
+    rating: int
+    start: str
+    end: str
+
+class SessionOut(BaseModel):
+    id: int
+    title: str
+    location: str
+    start: datetime
+    end: datetime
+    rating: int
+
+    class Config:
+        orm_mode = True
+
+
+@app.get("/api/profile/session", response_model=List[SessionOut])
 def get_sessions(current_user: dict = Depends(get_current_user)):
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
 
-    # get the user's ID from their email
+    # Get user ID based on email
     cursor.execute("SELECT id FROM users WHERE email = %s", (current_user["email"],))
     user = cursor.fetchone()
     if not user:
@@ -225,21 +235,16 @@ def get_sessions(current_user: dict = Depends(get_current_user)):
         db.close()
         raise HTTPException(status_code=404, detail="User not found")
 
-    # use user['id'] to fetch sessions
-    cursor.execute(
-        "SELECT id, title, location, start, end, rating FROM user_surf_sessions WHERE user_id = %s",
-        (user["id"],),
-    )
+    # Fetch sessions using user ID
+    cursor.execute("""
+        SELECT id, title, location, start, end, rating 
+        FROM user_surf_sessions 
+        WHERE user_id = %s
+    """, (user["id"],))
+    
     results = cursor.fetchall()
     cursor.close()
     db.close()
-
-    # convert datetime objects to strings
-    for record in results:
-        if isinstance(record.get("start"), datetime):
-            record["start"] = record["start"].isoformat()
-        if isinstance(record.get("end"), datetime):
-            record["end"] = record["end"].isoformat()
 
     return results
 
@@ -265,7 +270,7 @@ def add_session(
     id = cursor.lastrowid
     db.close()
 
-    return {"id": id, "title": request.title, "rating": request.rating}
+    return {"id": id, "title": request.title, "rating": request.rating, "location": request.location, "start": request.start, "end": request.end}
 
 
 
@@ -279,6 +284,15 @@ class WeatherRequest(BaseModel):
     lon: float
     start_hour: str  # Format: "2025-05-22T00:00"
     end_hour: str    # Format: "2025-05-23T00:00"
+
+beaches ={
+    "lowerTrestles": [33.381440, -117.588430],
+    "laJolla": [32.865777, -117.256140],
+    "scripps": [32.863000, -117.257000],
+    "delMar": [32.959163, -117.269630],
+    "blacks": [32.883380, -117.255710],
+    "cardiff": [33.013522, -117.282190],
+    }
 
 
 @app.post("/api/weather")
@@ -329,3 +343,8 @@ def get_weather(
         print("Weather API Error:", str(e))
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Weather API error: {str(e)}")
+
+# ------------------------
+# Forecast API Endpoints
+# ------------------------
+

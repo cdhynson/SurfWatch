@@ -1,26 +1,48 @@
 services:
- db:
-   image: mysql:latest
-   restart: always
-   ports:
-     - '3306:3306'
-   volumes:
-     - ./data:/var/lib/mysql
-   env_file: .env
-   healthcheck:
-     test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$MYSQL_USER", "-p$$MYSQL_PASSWORD"]
-     interval: 5s
-     timeout: 5s
-     retries: 5
-     start_period: 30s
+  db:
+    image: mysql:latest
+    restart: always
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data:/var/lib/mysql
+      - db_data:/var/lib/mysql
+    env_file: .env
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$MYSQL_USER", "-p$$MYSQL_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
- web:
-   build: .
-   ports:
-     - '8000:8000'
-   volumes:
-     - ./app:/backend/main
-   depends_on:
-     db:
-       condition: service_healthy
-   env_file: .env
+  web:
+    build: 
+      context: .
+      dockerfile: SurfWatch-App/backend/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./SurfWatch-App/backend:/code/app
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+
+  frontend:
+    build: 
+      context: ./SurfWatch-App/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./SurfWatch-App/frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - REACT_APP_API_URL=http://localhost:8000
+    depends_on:
+      - web
+    command: npm start
+
+volumes:
+  db_data:

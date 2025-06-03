@@ -5,11 +5,11 @@ function SessionCard({
   title,
   dateTime,
   location,
+  rating,
   waveHeight,
   tide,
   wind,
   waterTemp,
-  rating,
 }) {
   const renderStars = () => {
     const stars = [];

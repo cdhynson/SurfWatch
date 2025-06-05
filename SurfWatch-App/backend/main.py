@@ -99,7 +99,8 @@ def gen_frames():
 
 @app.get('/api/camera')
 def index(request: Request):
-    return templates.TemplateResponse("camera.html", {"request": request})
+    jetson_ip = "100.117.15.117" # Replace with your Jetson's IP address -G
+    return templates.TemplateResponse("camera.html", {"request": request, "jetson_ip": jetson_ip})
 
 @app.get('/video_feed')
 def video_feed():

@@ -39,14 +39,16 @@ function Profile() {
       .then((res) => {
         console.log(res.data.username);
         setUsername(res.data.username);
+      })
+      .catch(() =>{ 
+        localStorage.removeItem("token");
+        navigate("/login");
       });
+
   }, []);
 
   const handleSession = (e) => {
     e.preventDefault();
-    console.log("Start-end:", endTime, startTime);
-    console.log("TOKEN BEING SENT:", token);
-
     axios
       .post(
         `${API_BASE}/api/profile/session`,
@@ -88,6 +90,10 @@ function Profile() {
               dateTime={`${session.start} to ${session.end}`}
               location={session.location}
               rating={session.rating}
+              waveHeight={session.wave}
+              tide={session.tide}
+              wind={session.wind}
+              waterTemp={session.water}
             />
           ))}
         </div>
@@ -149,8 +155,8 @@ function Profile() {
       </div>
 
       {showModal && (
-        <div className="session-modal" onClick={() => setShowModal(false)}>
-          <form onSubmit={handleSession} onClick={(e) => e.stopPropagation()}>
+        <div className="session-modal" >
+          <form onSubmit={handleSession} >
             <button
               type="button"
               className="close-modal"
@@ -179,8 +185,11 @@ function Profile() {
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
               >
-                <option value="lower_trestles">Lower Trestles</option>
+                <option value="lowerTrestles">Lower Trestles</option>
                 <option value="scripps">Scripps</option>
+                <option value="laJolla">La Jolla</option>
+                <option value="delMar">Del Mar</option>
+                <option value="blacks">Blacks</option>
               </select>
             </div>
             <div>

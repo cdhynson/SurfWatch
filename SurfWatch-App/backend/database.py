@@ -44,6 +44,7 @@ def setup_database():
                 email VARCHAR(255) NOT NULL UNIQUE,
                 password TEXT,
                 location VARCHAR(255) NOT NULL,
+                profile_pic VARCHAR(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """,

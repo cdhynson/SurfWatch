@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+import { computeSurfStreak } from "../../utils.js";
 import BottomNav from "../../components/Navbars/BottomNav";
 import TopNav from "../../components/Navbars/TopNav";
 import SessionCard from "../../components/Profile/SessionCard";
@@ -101,15 +102,24 @@ function Profile() {
     }
   };
 
+
+const sortedSessions = React.useMemo(() => {
+  return [...sessions].sort((a, b) => new Date(b.start) - new Date(a.start));
+}, [sessions]);
+
+const streak = React.useMemo(() => computeSurfStreak(sortedSessions), [sortedSessions]);
+
+
   return (
     <>
       <TopNav />
       <div className="profile-container">
         <div className="profile-header">
-          <span id="surf-streak">
-            <img src="/assets/fire.svg" alt="Flame Icon" />
-            <p>3 DAY SURFING STREAK</p>
-          </span>
+          <span id="surf-streak" style={{ opacity: streak === 0 ? 0.5 : 1 }}>
+          <img src="/assets/fire.svg" alt="Flame Icon" />
+          <p>{streak} DAY SURFING STREAK</p>
+        </span>
+
 
           <div className="pfp-section">
             <div className="pfp" />

@@ -84,13 +84,24 @@ section {
   border-radius: 8px;
 }
 
-.forecast-placeholder {
-  width: 100%;
-  height: 20vh;
-  background-color: #f0f0f0;
-  border: 2px dashed #ccc;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.forecast-section h2{
+ margin-bottom: 0;
 }
+
+.forecast-days {
+  display: flex;
+  justify-content: space-around; /* matches the percentage row */
+  align-items: center;
+  width: 90%;
+  font-size: 14px;
+  font-weight: 500;
+  color: #444;
+  margin: 0px auto;
+  
+}
+
+.forecast-days p {  
+  text-align: center;
+  flex: 1; /* ensure even spacing */
+}
+

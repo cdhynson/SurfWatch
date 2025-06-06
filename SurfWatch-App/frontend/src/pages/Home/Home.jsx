@@ -43,9 +43,9 @@ function Home() {
           <div className="carousel">
             <div className="carousel-item">
               <img
-                src="http://localhost:8000/video_feed"
-                alt="sample-cam"
-                className="camera-feed"
+                src="https://6f90-69-196-44-113.ngrok-free.app/video_feed"
+                width="640"
+                height="480"
               />
               <p className="location">Sample Cam</p>
             </div>

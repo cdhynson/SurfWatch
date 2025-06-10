@@ -3,7 +3,7 @@ import json
 import os
 import uuid
 import traceback
-from datetime import datetime
+from datetime import datetime, time, timedelta, timezone
 from contextlib import asynccontextmanager
 from typing import List
 
@@ -20,12 +20,17 @@ from pydantic import BaseModel
 from retry_requests import retry
 from passlib.hash import bcrypt
 from jose import jwt, JWTError
+from .crowd import (
+    generate_hourly_crowd_forecast, summarize_daily_crowdedness, get_environmental_summary)
+
+# from crowd import crowd_forecast
 
 # FastAPI Components
 from fastapi import (
-    FastAPI, Request, Query, Form, Body, Depends, Security,
+    FastAPI, Request, Query, Form, Body, Depends, Security, Path,
     status, HTTPException
 )
+
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import (
     StreamingResponse, JSONResponse,
@@ -207,9 +212,9 @@ def get_me(current_user: dict = Depends(get_current_user)):
 class SessionsModel(BaseModel):
     title: str
     location: str
+    start: datetime
+    end: datetime
     rating: int
-    start: str
-    end: str
 
 class SessionOut(BaseModel):
     id: int
@@ -274,78 +279,144 @@ def add_session(
     return {"id": id, "title": request.title, "rating": request.rating, "location": request.location, "start": request.start, "end": request.end}
 
 
-
-# ------------------------
-# Weather API Endpoints
-# ------------------------
-
-
-class WeatherRequest(BaseModel):
-    lat: float
-    lon: float
-    start_hour: str  # Format: "2025-05-22T00:00"
-    end_hour: str    # Format: "2025-05-23T00:00"
-
-beaches ={
-    "lowerTrestles": [33.381440, -117.588430],
-    "laJolla": [32.865777, -117.256140],
-    "scripps": [32.863000, -117.257000],
-    "delMar": [32.959163, -117.269630],
-    "blacks": [32.883380, -117.255710],
-    "cardiff": [33.013522, -117.282190],
-    }
-
-
-@app.post("/api/weather")
-def get_weather(
-    weather_req: WeatherRequest,
+@app.patch("/api/profile/session/{session_id}")
+def update_session(
+    session_id: int = Path(..., description="ID of the session to update"),
+    request: SessionsModel = None,
+    current_user: dict = Depends(get_current_user)
 ):
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+
+    # Get user ID
+    cursor.execute("SELECT id FROM users WHERE email = %s", (current_user["email"],))
+    user = cursor.fetchone()
+    if not user:
+        cursor.close()
+        db.close()
+        raise HTTPException(status_code=401, detail="User not found")
+
+    # Ensure session belongs to user
+    cursor.execute(
+        "SELECT * FROM user_surf_sessions WHERE id = %s AND user_id = %s",
+        (session_id, user["id"])
+    )
+    session = cursor.fetchone()
+    if not session:
+        cursor.close()
+        db.close()
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Build update query dynamically
+    fields = []
+    values = []
+
+    for field in ['title', 'location', 'rating', 'start', 'end']:
+        val = getattr(request, field)
+        if val is not None:
+            fields.append(f"{field} = %s")
+            values.append(val)
+
+    if not fields:
+        raise HTTPException(status_code=400, detail="No fields provided for update")
+
+    query = f"UPDATE user_surf_sessions SET {', '.join(fields)} WHERE id = %s AND user_id = %s"
+    values.extend([session_id, user["id"]])
+
+    cursor.execute(query, values)
+    db.commit()
+    cursor.close()
+    db.close()
+
+    return {"message": "Session updated successfully"}
+
+
+# ------------------------
+# Crowd API Endpoints
+# ------------------------
+
+@app.get("/api/crowd/hourly")
+def get_hourly_crowd(beach_index: int, start_date: str, end_date: str):
     try:
-        cache_session = requests_cache.CachedSession('.cache', expire_after=3600)
-        openmeteo = openmeteo_requests.Client(session=cache_session)
+        df = generate_hourly_crowd_forecast(beach_index, start_date, end_date)
 
-        url = "https://marine-api.open-meteo.com/v1/marine"
-        params = {
-            "latitude": weather_req.lat,
-            "longitude": weather_req.lon,
-            "hourly": ["wave_height", "wind_wave_height", "sea_surface_temperature"],
-            "start_hour": weather_req.start_hour,
-            "end_hour": weather_req.end_hour
-        }
-        responses = openmeteo.weather_api(url, params=params)
-        response = responses[0]  # one location = one response
+        # Format data for frontend
+        result = [
+            {
+                "date": pd.to_datetime(row["timestamp"]).strftime("%Y-%m-%d"),
+                "time": pd.to_datetime(row["timestamp"]).strftime("%-I%p").lower(),
+                "value": round(row["crowdedness"], 0)
+            }
+            for _, row in df.iterrows()
+        ]
 
-        hourly = response.Hourly()
 
-        # Extract numpy arrays for each variable
-        hourly_wave_height = hourly.Variables(0).ValuesAsNumpy()
-        hourly_wind_wave_height = hourly.Variables(1).ValuesAsNumpy()
-        hourly_sea_surface_temperature = hourly.Variables(2).ValuesAsNumpy()
-
-        # Build a dictionary with just the arrays
-        hourly_data = {
-            "wave_height": hourly_wave_height,
-            "wind_wave_height": hourly_wind_wave_height,
-            "sea_surface_temperature": hourly_sea_surface_temperature
-        }
-
-        # Create DataFrame for easy averaging
-        hourly_df = pd.DataFrame(data=hourly_data)
-
-        # Compute column-wise means
-        averages = hourly_df.mean(skipna=True).to_dict()
-
-        # Convert numpy types to native Python floats (for JSON serialization)
-        result = {key: float(val) for key, val in averages.items()}
-
-        return {"averages": result}
+        return JSONResponse(content=result)
 
     except Exception as e:
-        print("Weather API Error:", str(e))
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+        
+@app.get("/api/crowd/daily")
+def get_daily_crowdedness_summary(beach_index: int, start_date: str, end_date: str):
+    try:
+        df = generate_hourly_crowd_forecast(beach_index, start_date, end_date)
+        summary = summarize_daily_crowdedness(df)
+        return JSONResponse(content=summary)
+
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+    
+# ------------------------
+# Environmental conditions API Endpoints
+# ------------------------
+    
+@app.get("/api/environmental-summary")
+def environmental_summary_route(
+    beach_id: int = Query(..., description="Beach ID")
+):
+    """
+    API route that returns the environmental summary for a given beach ID.
+    Uses today's date with a fixed time range: 5:00 AM to 8:00 PM PST.
+    """
+    # PST = UTC-7
+    PST = timezone(timedelta(hours=-7))
+    now = datetime.now(PST)
+    
+    # Build datetime range for today
+    start_dt = datetime.combine(now.date(), time(hour=5), tzinfo=PST)
+    end_dt = datetime.combine(now.date(), time(hour=20), tzinfo=PST)
+
+    summary = get_environmental_summary(beach_id, start_dt.isoformat(), end_dt.isoformat())
+    return JSONResponse(content=summary)
+
+@app.get("/api/environmental-conditions")
+def environmental_conditions_route(
+    beach_id: int = Query(..., description="Beach ID"),
+    start: str = Query(..., description="Start datetime in ISO format (e.g., 2025-06-09T05:00:00-07:00)"),
+    end: str = Query(..., description="End datetime in ISO format (e.g., 2025-06-09T20:00:00-07:00)")
+):
+    """
+    Returns wave height, wind speed/direction, tide, and temperature for a beach between start and end datetime.
+    """
+    try:
+        # Call the existing summary function with start and end
+        summary = get_environmental_summary(beach_id, start, end)
+
+        # Return only the desired subset
+        selected_data = {
+            "temperature_2m": summary["temperature_2m"],
+            "wind_speed": summary["wind_speed"],
+            "wind_direction": summary["wind_direction"],
+            "wave_height": summary["wave_height"],
+            "tide": summary["tide"]
+        }
+        return JSONResponse(content=selected_data)
+    except Exception as e:
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Weather API error: {str(e)}")
-
-# ------------------------
-# Forecast API Endpoints
-# ------------------------
-
+        raise HTTPException(status_code=500, detail=f"Environmental conditions api error: {str(e)}")

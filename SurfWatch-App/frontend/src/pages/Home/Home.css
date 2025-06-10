@@ -1,7 +1,6 @@
 .home-container {
   padding: 20px;
-  font-family: Arial, sans-serif;
-  margin-top: 2.5em;
+  margin: 2.5em 0;
 }
 
 section {
@@ -55,21 +54,6 @@ section {
   color: #EE6C4D;
 }
 
-.carousel {
-  display: flex;
-  gap: 3vw;
-  overflow-x: auto;
-}
-
-.carousel-item {
-  text-align: center;
-  min-width: 80vw;
-  height:fit-content;
-}
-
-.carousel-item p{
-  margin: 0;
-}
 
 .iframe-wrapper{
   width: 70vw;
@@ -84,8 +68,13 @@ section {
   border-radius: 8px;
 }
 
+.beachcam-section{
+  margin: .5em 0;
+}
+
 .forecast-section h2{
- margin-bottom: 0;
+  margin: 0;
+
 }
 
 .forecast-days {

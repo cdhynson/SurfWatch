@@ -11,7 +11,7 @@
   justify-content: center;  /* Vertical center if height is set */
   gap: 20vw;
 
-  background-color: white;
+  background-color: #fbfbfb;
   padding: 1em 0;
   border-top: 1px solid rgba(28, 34, 44, 0.25);
   z-index: 2;

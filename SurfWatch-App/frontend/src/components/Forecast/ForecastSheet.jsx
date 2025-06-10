@@ -5,10 +5,10 @@ function BottomSheet({ children }) {
   const sheetRef = useRef(null);
   const dragging = useRef(false);
   const startY = useRef(0);
-  const [translateY, setTranslateY] = useState(70); // 80% = mostly closed
+  const [translateY, setTranslateY] = useState(0); // 80% = mostly closed
 
-  const maxTranslateY = 70; // open
-  const minTranslateY = 0;  // closed
+  const maxTranslateY = 75; // closed
+  const minTranslateY = 0;  // open
 
   const updateSheetPosition = (percent) => {
     const clamped = Math.min(Math.max(minTranslateY, percent), maxTranslateY);
@@ -36,7 +36,7 @@ function BottomSheet({ children }) {
     dragging.current = false;
 
     // Decide based on final position whether to open or close
-    if (translateY < 20) {
+    if (translateY < 50) {
       // Less than halfway => snap open
       setTranslateY(minTranslateY);
       sheetRef.current.style.transform = `translateY(${minTranslateY}%)`;

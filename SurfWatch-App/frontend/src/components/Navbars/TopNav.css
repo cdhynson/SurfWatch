@@ -6,14 +6,12 @@
   top: 0px;
   width: 100%;
 
-  background-color: white;
-
   display: flex;
   align-items:flex-end;  /* Horizontal center */
   justify-content: center;  /* Vertical center if height is set */
   gap: 20%;
 
-  background-color: white;
+  background-color: #fbfbfb;
   padding: 1.5em 0;
   z-index: 2;
 

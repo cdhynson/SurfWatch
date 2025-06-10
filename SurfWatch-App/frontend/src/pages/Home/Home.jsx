@@ -2,25 +2,23 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-
 import BottomNav from "../../components/Navbars/BottomNav";
 import TopNav from "../../components/Navbars/TopNav";
-import ForecastChart  from "../../components/Forecast/ForecastChart.jsx";
-import { computeSurfStreak } from "../../utils.js";
-
+import ForecastChart from "../../components/Forecast/ForecastChart.jsx";
+import BeachCam from "../../components/Home/BeachCam.jsx";
+import {getCurrentDateTimeLocal, computeSurfStreak } from "../../utils.js";
+import { EditSessionModal } from "../../components/Sessions/SessionsModal.jsx";
 
 import "./Home.css";
 
-
 function Home() {
-
-  const [activeTab, setActiveTab] = useState(0); // 0 = Summary, 1 = Sessions
+  const [activeSessionId, setActiveSessionId] = useState(null);
   const [showModal, setShowModal] = useState(false);
-
   const [sessions, setSessions] = useState([]);
+  const sessionToEdit = sessions.find(s => s.id === activeSessionId);
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
-  const [startTime, setStartTime] = useState("");
+  const [startTime, setStartTime] = useState(new Date());
   const [endTime, setEndTime] = useState("");
   const [rating, setRating] = useState(0);
 
@@ -39,142 +37,173 @@ function Home() {
       })
       .then((res) => {
         setSessions(res.data);
-        setLoggedIn(true)
+        setLoggedIn(true);
       })
       .catch(() => setLoggedIn(false));
-
-    axios
-      .get(`${API_BASE}/api/user`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        console.log(res.data.username);
-        setUsername(res.data.username);
-      })
-      .catch(() =>{ 
-        localStorage.removeItem("token");
-        navigate("/login");
-      });
-
   }, []);
 
 
-  const handleStart = (e) => {
-    e.preventDefault();
+  function startSession() {
+    const now = getCurrentDateTimeLocal();
+    setStartTime(now);
+
     axios
       .post(
         `${API_BASE}/api/profile/session`,
         {
-          start: startTime,
+          start: now,
+          title: "Surfed with Sharks",
+          location: "Lower Trestles",
+          rating: 1,
+          end: now,
         },
         {
-          headers: {
-            Authorization: `Bearer ${token}`
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       )
-      .catch(() => alert("Failed to start session:"));
-  };
-
-  function startSession() {
-    
-
+      .then((res) => {
+        setActiveSessionId(res.data.id);
+        setSessions([...sessions, res.data]);
+      })
+      .catch(() => alert("Failed to start session"));
   }
+
 
   function endSession() {
 
+    setEndTime(getCurrentDateTimeLocal());
+    setShowModal(true);
   }
+
 
   const sortedSessions = React.useMemo(() => {
     return [...sessions].sort((a, b) => new Date(b.start) - new Date(a.start));
   }, [sessions]);
-  
-  const streak = React.useMemo(() => computeSurfStreak(sortedSessions), [sortedSessions]);
-  
-  console.log("Sessions:", sessions);
-  console.log("Streak:", streak);
-  
+
+  const streak = React.useMemo(
+    () => computeSurfStreak(sortedSessions),
+    [sortedSessions]
+  );
+
   const beaches = [
-    {name:"Lower Trestles", value:"lowerTrestles"},{name:"Scripps", value: "scripps"},
-    {name:"Del Mar", value: "delMar"}];
-  
+    {
+      name: "Lower Trestles",
+      value: 1,
+      url: "https://camrewinds.cdn-surfline.com/oregon/wc-lowers.stream.20250608T014558086.mp4",
+    },
+    {
+      name: "Scripps",
+      value: 2,
+      url: "https://camrewinds.cdn-surfline.com/oregon/wc-church.stream.20250608T014911508.mp4",
+    },
+  ];
+
   const allDays = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"];
   const todayIndex = new Date().getDay(); // 0 = Sunday, 1 = Monday, ...
   const days = [...allDays.slice(todayIndex), ...allDays.slice(0, todayIndex)];
 
-
   return (
     <>
-    <TopNav/>
+      <TopNav />
       <div className="home-container">
         {/* Check-In */}
         <section className="checkin-section">
-          <span id="surf-streak" style={{ opacity: streak === 0 ? 0.5 : 1 , display: !loggedIn ? "none" : "flex"}}>
-          <img src="/assets/fire.svg" alt="Flame Icon" />
-          <p>{streak} DAY SURFING STREAK</p>
-        </span>
+          <span id="surf-streak" style={{ opacity: streak === 0 ? 0.5 : 1 }}>
+            <img src="/assets/fire.svg" alt="Flame Icon" />
+            <p>{streak} DAY SURFING STREAK</p>
+          </span>
           {!loggedIn ? (
-            <button className="checkin-button" onClick={() => navigate("/login")} style={{background:"#29324179"}}>
+            <button
+              className="checkin-button"
+              onClick={() => navigate("/login")}
+              style={{ background: "#29324179" }}
+            >
               <h2>Login to start session</h2>
             </button>
           ) : (
-            <button className="checkin-button" onClick={startSession}>
-              <h2>Start Session</h2>
+            <button
+              className="checkin-button"
+              onClick={activeSessionId ? endSession : startSession}
+            >
+              <h2>{activeSessionId ? "End Session" : "Start Session"}</h2>
             </button>
           )}
-
         </section>
-  
-        {/* Recommendations */}
-        <section className="recommendations-section">
-          <h2>Recommended</h2>
+
+        {/* Beach Cam */}
+        <section className="beachcam-section">
+          <h2>Beach Cams</h2>
           <div className="carousel">
             <div className="carousel-item">
               <img
                 src="https://6f90-69-196-44-113.ngrok-free.app/video_feed"
-                width="640"
-                height="480"
+                onError={(e) => {
+                  e.target.onerror = null; 
+                  e.target.src = "/assets/beach-placeholder.png"; 
+                }}
+                object-fit="cover"
               />
-              <p className="location">Sample Cam</p>
-            </div>
-            <div className="carousel-item">
-              <div className="iframe-wrapper">
-                <iframe
-                  src="https://embed.cdn-surfline.com/cams/58349b9b3421b20545c4b54d/199ae31e65bf748a7c7d928332998440490cd979"
-                  frameBorder="0"
-                  height="220vh"
-                  allowFullScreen
-                  title="La Jolla Shores Cam"
-                ></iframe>
+              <div className="beachcam-label">
+                <h3>Live Cam</h3>
+                <span className="beach-crowds">
+                  {/* Placeholder for sake of MVP */}
+                  <p>Lowest Crowds: 10am</p>
+                  <p>Peak Crowds: 8pm</p>
+                </span>
               </div>
-              <p className="location">La Jolla Shores</p>
             </div>
+            {beaches.map((beach, idx) => (
+              <BeachCam
+                key={idx}
+                name={beach.name}
+                beach={beach.value}
+                url={beach.url}
+              />
+            ))}
           </div>
         </section>
-  
+
         {/* Crowd Forecast Section */}
         <section className="forecast-section">
-          <h2>Crowd Forecast</h2>
-            <span className="forecast-days"> 
-              {days.map((d, i) => (
-                <p key={`label-${i}`} >
-                  {d}
-                </p>
-              ))}
-            </span>
-          {beaches.map((beach, idx)=>(
-            <ForecastChart 
-              name = {beach.name} 
-              beach ={beach.value} 
-              timeUnit={"days"}/>
+          <h2>Crowd Density Forecast</h2>
+          <span className="forecast-days">
+            {days.map((d, i) => (
+              <p key={`label-${i}`}>{d}</p>
+            ))}
+          </span>
+          {beaches.map((beach, idx) => (
+            <ForecastChart
+              key={idx}
+              name={beach.name}
+              beach={beach.value}
+              timeUnit={"days"}
+            />
           ))}
-          
         </section>
       </div>
-      <BottomNav/>
+
+      {showModal && sessionToEdit && (
+        <EditSessionModal
+          sessionId={activeSessionId}
+          initialData={sessionToEdit}
+          token={token}
+          API_BASE={API_BASE}
+          onClose={() => {
+            setShowModal(false);
+            setActiveSessionId(null);
+          }}
+          onSuccess={() => {
+            // Optionally refresh session list
+            axios.get(`${API_BASE}/api/profile/session`, {
+              headers: { Authorization: `Bearer ${token}` }
+            }).then(res => setSessions(res.data));
+          }}
+        />
+      )}
+
+      <BottomNav />
     </>
   );
-  
 }
 
 export default Home;

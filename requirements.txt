@@ -15,5 +15,6 @@ retry-requests
 uvicorn
 passlib
 python-jose
-
+xgboost
+scikit-learn
 

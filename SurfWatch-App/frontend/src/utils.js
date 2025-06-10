@@ -8,6 +8,32 @@ export function localDateString(date) {
   return `${year}-${month}-${day}`;
 }
 
+export function degreesToCompass(deg) {
+  if (typeof deg !== 'number' || isNaN(deg)) return "Unknown";
+
+  const directions = [
+    "N", "NNE", "NE", "ENE",
+    "E", "ESE", "SE", "SSE",
+    "S", "SSW", "SW", "WSW",
+    "W", "WNW", "NW", "NNW"
+  ];
+
+  // Normalize degrees to 0–360 range
+  const normalized = ((deg % 360) + 360) % 360;
+
+  const index = Math.round(normalized / 22.5) % 16;
+  return directions[index];
+}
+
+
+export function getCurrentDateTimeLocal() {
+  const now = new Date();
+  const offset = now.getTimezoneOffset();
+  const localDate = new Date(now.getTime() - offset * 60 * 1000);
+  return localDate.toISOString().slice(0, 19).replace("T", " "); // "YYYY-MM-DDTHH:MM"
+}
+
+
 export function computeSurfStreak(sessions) {
   if (!sessions.length) return 0;
 

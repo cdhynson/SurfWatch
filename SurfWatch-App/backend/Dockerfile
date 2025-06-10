@@ -8,7 +8,6 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
 
-
 COPY ./SurfWatch-App/backend /code/app
 
 # COPY ./sample /code/sample

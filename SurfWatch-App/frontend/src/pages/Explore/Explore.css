@@ -7,3 +7,177 @@
   width: 100vw;
   margin-top: 2em;
 }
+
+.explore-container h2 {
+  margin: 0;
+}
+
+.sheet-header {
+  display:flex;
+  justify-content: space-between;
+  padding: 0;
+}
+
+.explore-container h3 {
+  margin: .1em;
+}
+
+.weather {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #293241;
+  padding: .2em .5em;
+  border-radius: 15px; /* pill shape */
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  width: fit-content;
+  gap: 6px;
+}
+
+.weather img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.weather p{
+  margin: 0;
+}
+
+
+.beach-vid {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.video-wrapper {
+  position: relative;
+  width: 85vw;
+}
+
+.video-wrapper video {
+  width: 100%;
+  border-radius: 5px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  display: block;
+}
+
+.video-wrapper h3 {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  margin: 0;
+  padding: 6px 10px;
+  text-shadow: 0px 0px 5px #000000;   
+  color: white;
+  font-size: 1rem;
+  border-radius: 4px;
+  z-index: 2;
+}
+
+.cond-section {
+  margin: 1em;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-family: system-ui, sans-serif;
+}
+
+.card {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1.25rem 1.5rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sun-time {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sun-time img {
+  width: 24px;
+  height: 24px;
+}
+
+.label {
+  font-size: 0.85rem;
+  color: #555;
+  margin: 0;
+}
+
+.value {
+  font-weight: bold;
+  font-size: 1rem;
+  margin: 0;
+  color: #222;
+}
+
+.uv-index {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1em;
+  text-align: center;
+  font-size: .9rem;
+  color: #333;
+}
+
+.recommendation {
+  font-size: 0.85rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.card-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 1em;
+}
+
+.condition-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 1em;
+}
+
+.condition-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.condition-item img {
+  width: 20px;
+  height: 20px;
+}
+
+.wind-info, .swell-info {
+  font-size: 0.85rem;
+  font-weight: 500;
+
+  color: #444;
+}
+
+.card p{
+  margin:0;
+}
+
+.wind-info h4,
+.swell-info h4,
+.card h4 {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #444;
+}

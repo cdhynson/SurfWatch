@@ -2,21 +2,21 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-import { computeSurfStreak } from "../../utils.js";
+import { computeSurfStreak, getCurrentDateTimeLocal } from "../../utils.js";
 import BottomNav from "../../components/Navbars/BottomNav";
 import TopNav from "../../components/Navbars/TopNav";
-import SessionCard from "../../components/Profile/SessionCard";
+import SessionCard from "../../components/Sessions/SessionCard.jsx";
 import "./Profile.css";
 
 function Profile() {
-  const [activeTab, setActiveTab] = useState(0); // 0 = Summary, 1 = Sessions
+  const [activeTab, setActiveTab] = useState(1); // 0 = Summary, 1 = Sessions
   const [showModal, setShowModal] = useState(false);
 
   const [sessions, setSessions] = useState([]);
-  const [title, setTitle] = useState("");
-  const [location, setLocation] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [title, setTitle] = useState("Surfed with Sharks");
+  const [location, setLocation] = useState("Lower Trestles");
+  const [startTime, setStartTime] = useState(getCurrentDateTimeLocal());
+  const [endTime, setEndTime] = useState(getCurrentDateTimeLocal());
   const [rating, setRating] = useState(0);
 
   const [username, setUsername] = useState("");
@@ -46,41 +46,52 @@ function Profile() {
         navigate("/login");
       });
 
-  }, []);
+  }, [API_BASE, token, navigate]);
 
   const handleSession = (e) => {
-    e.preventDefault();
-    axios
-      .post(
-        `${API_BASE}/api/profile/session`,
-        {
-          title: title,
-          location: location,
-          rating: rating,
-          start: startTime,
-          end: endTime,
+  e.preventDefault();
+
+  // Convert to Date objects for comparison
+  const start = new Date(startTime);
+  const end = new Date(endTime);
+
+  if (end <= start) {
+    alert("End time must be after start time.");
+    return; // Prevent sending request
+  }
+
+  axios
+    .post(
+      `${API_BASE}/api/profile/session`,
+      {
+        title: title,
+        location: location,
+        rating: rating,
+        start: startTime,
+        end: endTime,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          },
-        }
-      )
-      .then((res) => {
-        setSessions([...sessions, res.data]);
-        setShowModal(false);
-        setTitle("");
-        setLocation("");
-        setStartTime("");
-        setEndTime("");
-        setRating("");
-      })
-      .catch(() => alert("Failed to add sessions:"));
-  };
+      }
+    )
+    .then((res) => {
+      setSessions([...sessions, res.data]);
+      setShowModal(false);
+      setTitle("Surfed with Sharks");
+      setLocation("Lower Trestles");
+      setStartTime(getCurrentDateTimeLocal());
+      setEndTime(getCurrentDateTimeLocal());
+      setRating(0);
+    })
+    .catch(() => alert("Failed to add sessions:"));
+};
 
   const renderTabContent = () => {
     if (activeTab === 0) {
-      return <div className="summary-content"></div>;
+      return <div className="summary-content">
+      </div>;
     } else {
       return (
         <div className="sessions-content">
@@ -88,13 +99,10 @@ function Profile() {
             <SessionCard
               key={idx}
               title={session.title}
-              dateTime={`${session.start} to ${session.end}`}
+              start={session.start}
+              end={session.end}
               location={session.location}
               rating={session.rating}
-              waveHeight={session.wave}
-              tide={session.tide}
-              wind={session.wind}
-              waterTemp={session.water}
             />
           ))}
         </div>
@@ -119,22 +127,18 @@ const streak = React.useMemo(() => computeSurfStreak(sortedSessions), [sortedSes
           <img src="/assets/fire.svg" alt="Flame Icon" />
           <p>{streak} DAY SURFING STREAK</p>
         </span>
-
-
           <div className="pfp-section">
-            <div className="pfp" />
-            <img src="/assets/pfp.svg" alt="Profile" />
-            <button className="edit-pfp">
-              <img src="/assets/edit.svg" alt="Edit" />
-            </button>
-          </div>
+  <div className="pfp-wrapper">
+    <img src="/assets/pfp.svg" alt="Profile" className="pfp" />
+    <button className="edit-pfp">
+      <img src="/assets/edit.svg" alt="Edit" />
+    </button>
+  </div>
+</div>
+
 
           <h2 className="user-name">{username}</h2>
 
-          <div className="skill-container">
-            <img src="/assets/intermediate.svg" alt="Skill Bar" />
-            <p id="skill-label">INTERMEDIATE</p>
-          </div>
 
           <button
             className="add-session-btn"
@@ -181,7 +185,6 @@ const streak = React.useMemo(() => computeSurfStreak(sortedSessions), [sortedSes
                 type="text"
                 id="title"
                 name="title"
-                placeholder="Surfed with Sharks"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
@@ -195,11 +198,8 @@ const streak = React.useMemo(() => computeSurfStreak(sortedSessions), [sortedSes
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
               >
-                <option value="lowerTrestles">Lower Trestles</option>
-                <option value="scripps">Scripps</option>
-                <option value="laJolla">La Jolla</option>
-                <option value="delMar">Del Mar</option>
-                <option value="blacks">Blacks</option>
+                <option value="Lower Trestles">Lower Trestles</option>
+                <option value="Scripps">Scripps</option>
               </select>
             </div>
             <div>
@@ -208,6 +208,7 @@ const streak = React.useMemo(() => computeSurfStreak(sortedSessions), [sortedSes
                 type="datetime-local"
                 id="start"
                 name="start"
+                defaultValue={""}
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
               />

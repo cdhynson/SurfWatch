@@ -11,16 +11,34 @@
   padding: 1rem;
 }
 
-.pfp-section{
- margin-bottom: 0;
- width: 100%;
-
+.pfp-section {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 0;
 }
 
-.edit-pfp{
+.pfp-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.pfp {
+  width: 80px; /* adjust as needed */
+  height: 80px; /* adjust as needed */
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.edit-pfp {
   all: unset;
-  margin:-20px -20px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  cursor: pointer;
 }
+
+
 .add-session-btn{
   padding: 1rem;
   width: 100%;

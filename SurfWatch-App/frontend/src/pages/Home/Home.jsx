@@ -136,7 +136,7 @@ function Home() {
           <div className="carousel">
             <div className="carousel-item">
               <img
-                src="https://6f90-69-196-44-113.ngrok-free.app/video_feed"
+                src="https://9e0cfe0e91bd.ngrok.app/video_feed"
                 onError={(e) => {
                   e.target.onerror = null; 
                   e.target.src = "/assets/beach-placeholder.png"; 

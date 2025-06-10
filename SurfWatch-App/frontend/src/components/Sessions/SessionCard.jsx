@@ -20,9 +20,15 @@ function SessionCard({
   
   useEffect(()=>{
     const BEACHES = {
-    "Lower Trestles": { id: 1, lat: 33.3847, lon: -117.5941 },
-    "Scripps": { id: 2, lat: 32.8650, lon: -117.2534 },}
+    "Lower Trestles": { id: 1},
+    "Scripps": { id: 2 },
+    "La Jolla": { id: 3 },
+    "Del Mar": { id: 4},
+    "Blacks": { id:5},
+    "Cardiff": {id:6}
+    }
     console.log(location)
+
 
     axios
       .get(`${API_BASE}/api/environmental-conditions`, {

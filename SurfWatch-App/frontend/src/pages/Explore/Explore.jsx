@@ -135,7 +135,7 @@ function Explore() {
           <div className="beach-vid">
             <div className="video-wrapper">
               <h3>{beach} Live Cam</h3>
-              <video src={beachURL} controls></video>
+              <video src={beachURL} autoPlay ></video>
             </div>
           </div>
           <section className="cond-section">

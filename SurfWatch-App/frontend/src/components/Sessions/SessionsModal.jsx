@@ -69,11 +69,12 @@ export function EditSessionModal({ sessionId, initialData, token, API_BASE, onCl
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           >
-            <option value="lowerTrestles">Lower Trestles</option>
-            <option value="scripps">Scripps</option>
-            <option value="laJolla">La Jolla</option>
-            <option value="delMar">Del Mar</option>
-            <option value="blacks">Blacks</option>
+            <option value="Lower Trestles">Lower Trestles</option>
+            <option value="Scripps">Scripps</option>
+            <option value="La Jolla">La Jolla</option>
+            <option value="Del Mar">Del Mar</option>
+            <option value="Blacks">Blacks</option>
+            <option value="Cardiff">Cardiff</option>
           </select>
         </div>
 

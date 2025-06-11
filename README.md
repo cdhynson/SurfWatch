@@ -89,6 +89,7 @@ SurfWatch/
 ---
 
 ## Usage
+#### Note: Interface was designed in mind for mobile use.
 
 - **Login/Signup:** Create an account or log in.
 - **Profile:** Track your surf sessions, view stats, and add new sessions.

@@ -2,6 +2,8 @@
 
 SurfWatch is a full-stack web application for lineup crowd detection/forecasting, surf session tracking, live beach cams, and surf/environmental forecasting.
 
+![alt text](demo.png)
+
 ---
 
 ## Project Structure

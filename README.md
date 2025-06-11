@@ -122,10 +122,201 @@ npm start
 
 ---
 
-## Learn More
+# Backend Technical Overview
 
-- [React documentation](https://reactjs.org/)
-- [FastAPI documentation](https://fastapi.tiangolo.com/)
-- [Docker Compose docs](https://docs.docker.com/compose/)
+This document describes the backend architecture, main modules, API endpoints, and data flow for the SurfWatch application.
+
+---
+
+## 1. Overview
+
+- **Framework:** FastAPI (Python)
+- **Database:** MySQL
+- **ML/Forecasting:** XGBoost, Open-Meteo API, custom crowd models
+- **Deployment:** Docker (with Docker Compose)
+- **Directory:** `SurfWatch-App/backend/`
+
+---
+
+## 2. Key Modules
+
+### main.py
+
+- **Entrypoint for FastAPI app**
+- Handles:
+  - User authentication (signup, login, JWT)
+  - User profile and surf session CRUD
+  - Camera/video feed endpoints
+  - Environmental and crowd forecast API endpoints
+  - CORS and middleware setup
+  - Database setup and teardown
+
+### database.py
+
+- **Database connection and schema management**
+- Functions for:
+  - Connecting to MySQL using environment variables
+  - Creating and dropping tables (`users`, `sessions`, `user_surf_sessions`)
+  - Utility functions for user/session CRUD
+
+### crowd.py
+
+- **Crowd forecasting and environmental data logic**
+- Contains:
+  - Integration with Open-Meteo API for weather/marine data
+  - XGBoost-based crowd density prediction
+  - Data aggregation for hourly/daily crowd forecasts
+  - Functions to summarize and merge environmental data
+
+---
+
+## 3. Database Schema
+
+### Tables
+
+- **users**
+| Field         | Type      | Description                |
+|---------------|-----------|----------------------------|
+| id            | INT (PK)  | Unique user ID             |
+| username      | VARCHAR   | Unique username            |
+| email         | VARCHAR   | Unique email               |
+| password      | TEXT      | Hashed password            |
+| location      | VARCHAR   | User's home location       |
+| profile_pic   | VARCHAR   | Profile picture URL        |
+| created_at    | TIMESTAMP | Account creation time      |
+
+- **sessions**
+| Field         | Type      | Description                |
+|---------------|-----------|----------------------------|
+| id            | VARCHAR   | Unique session ID (UUID)   |
+| user_id       | INT (FK)  | Linked user                |
+| created_at    | TIMESTAMP | Session creation time      |
+
+- **user_surf_sessions**
+| Field         | Type      | Description                |
+|---------------|-----------|----------------------------|
+| id            | INT (PK)  | Unique surf session ID     |
+| user_id       | INT (FK)  | Linked user                |
+| title         | VARCHAR   | Session title              |
+| location      | VARCHAR   | Beach name                 |
+| start         | DATETIME  | Start time                 |
+| end           | DATETIME  | End time                   |
+| rating        | INT       | User rating (1-5)          |
+
+---
+
+## 4. API Endpoints
+
+### Authentication
+
+- `POST /signup`  
+  Register a new user. Returns JWT token.
+
+- `POST /login`  
+  Authenticate user. Returns JWT token.
+
+- `GET /api/user`  
+  Get current user profile (requires JWT).
+
+---
+
+### Surf Sessions
+
+- `GET /api/profile/session`  
+  Get all surf sessions for the current user.
+
+- `POST /api/profile/session`  
+  Add a new surf session.
+
+- `PATCH /api/profile/session/{session_id}`  
+  Update an existing surf session.
+
+---
+
+### Environmental & Crowd Forecast
+
+- `GET /api/environmental-summary?beach_id=...`  
+  Get current and forecasted environmental data for a beach.
+
+- `GET /api/environmental-conditions?beach_id=...&start=...&end=...`  
+  Get environmental conditions for a beach and time window.
+
+- `GET /api/crowd/hourly?beach_index=...&start_date=...&end_date=...`  
+  Get hourly crowd forecast for a beach.
+
+- `GET /api/crowd/daily?beach_index=...&start_date=...&end_date=...`  
+  Get daily summary of crowd forecast for a beach.
+
+---
+
+### Camera Feed
+
+- `GET /api/camera`  
+  Returns camera stream HTML.
+
+- `GET /video_feed`  
+  (Optional) Streams live camera feed (MJPEG).
+
+---
+
+## 5. Environmental & Crowd Forecasting
+
+- **Weather & Marine Data:**  
+  Uses Open-Meteo API for hourly/daily weather, wind, tide, and marine conditions.
+- **Crowd Model:**  
+  XGBoost regression model predicts crowdedness using environmental features, time, and holiday info.
+- **Data Aggregation:**  
+  Hourly predictions are summarized into daily stats (mean, median, peak, low/peak times).
+
+---
+
+## 6. Security
+
+- **Authentication:**  
+  JWT tokens for all protected endpoints.
+- **Password Storage:**  
+  Hashed with bcrypt.
+- **CORS:**  
+  Enabled for all origins (can be restricted in production).
+
+---
+
+## 7. Deployment
+
+- **Docker:**  
+  Backend runs in a container with all dependencies.
+- **Environment Variables:**  
+  Managed via `.env` file (see `.env.example`).
+
+---
+
+## 8. Extensibility
+
+- Modular code for easy addition of new endpoints or models.
+- ML models can be updated independently in the `models/` directory.
+- Database schema can be extended for new features.
+
+---
+
+## 9. Example Data Flow
+
+**Adding a Surf Session:**
+1. User submits session via frontend.
+2. Frontend sends POST to `/api/profile/session` with JWT.
+3. Backend validates, stores session in `user_surf_sessions`.
+4. Returns new session data to frontend.
+
+**Getting Crowd Forecast:**
+1. Frontend requests `/api/crowd/hourly` or `/api/crowd/daily`.
+2. Backend fetches weather/marine data, runs ML model, returns forecast.
+
+---
+
+## 10. References
+
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [Open-Meteo API](https://open-meteo.com/)
+- [XGBoost Documentation](https://xgboost.readthedocs.io/)
+- [MySQL Documentation](https://dev.mysql.com/doc/)
 
 ---

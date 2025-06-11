@@ -216,9 +216,7 @@ def crowd_forecast(req: CrowdRequest):
 
     input_df = pd.DataFrame([row])[features]
     prediction = model.predict(input_df)[0]
-    if prediction < 0:
-        prediction = 0
-    return prediction
+    return max(prediction, 0)
 
 def avg_conditions(lat, lon, start, end):
     """
@@ -259,19 +257,18 @@ def generate_hourly_crowd_forecast(beach_id: str, start_date: str, end_date: str
     weather_df, weather_hourly, current_temp, current_code = weather_api(lat, lon, start_date, end_date)
     marine_hourly = marine_api(lat, lon, start_date, end_date)
 
-    # Merge on datetime
-    hourly_data = pd.merge(weather_hourly, marine_hourly, on='date', how='inner')
+    # Merge on datetime and drop rows with missing required data
+    hourly_data = pd.merge(weather_hourly, marine_hourly, on="date", how="inner")
     hourly_data = hourly_data.dropna(subset=["sea_surface_temperature", "wave_height", "wind_speed_10m"])
 
     forecasts = []
-
     for _, row in hourly_data.iterrows():
         timestamp = row["date"]
         is_holiday = int(timestamp.strftime("%Y-%m-%d") in US_HOLIDAYS_2025)
-        weather = float(current_code)  # Could also estimate from conditions
+        weather = float(current_code)  
 
         req = CrowdRequest(
-            beach_id=1,  # If your model was trained on int IDs
+            beach_id=1,  
             timestamp=timestamp.to_pydatetime(),
             is_holiday=is_holiday,
             weather=weather,
@@ -281,7 +278,10 @@ def generate_hourly_crowd_forecast(beach_id: str, start_date: str, end_date: str
         )
 
         predicted = crowd_forecast(req)
-        forecasts.append({"timestamp": timestamp, "crowdedness": predicted})
+        forecasts.append({
+            "timestamp": timestamp,
+            "crowdedness": predicted
+        })
 
     return pd.DataFrame(forecasts)
 
@@ -422,4 +422,3 @@ if __name__ == "__main__":
     )
 
     print(get_environmental_summary(1, "2025-06-09"))
-    

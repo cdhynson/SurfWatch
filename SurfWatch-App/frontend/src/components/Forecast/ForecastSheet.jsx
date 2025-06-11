@@ -1,57 +1,55 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import "./Forecast.css";
 
 function BottomSheet({ children }) {
   const sheetRef = useRef(null);
   const dragging = useRef(false);
   const startY = useRef(0);
-  const [translateY, setTranslateY] = useState(0); // 80% = mostly closed
+  const [translateY, setTranslateY] = useState(0);
 
-  const maxTranslateY = 75; // closed
-  const minTranslateY = 0;  // open
+  const maxTranslateY = 75;
+  const minTranslateY = 0;
 
-  const updateSheetPosition = (percent) => {
-    const clamped = Math.min(Math.max(minTranslateY, percent), maxTranslateY);
-    setTranslateY(clamped);
-    if (sheetRef.current) {
-      sheetRef.current.style.transform = `translateY(${clamped}%)`;
-    }
-  };
+  const updateSheetPosition = useCallback(
+    (percent) => {
+      const clamped = Math.min(Math.max(minTranslateY, percent), maxTranslateY);
+      setTranslateY(clamped);
+      if (sheetRef.current) {
+        sheetRef.current.style.transform = `translateY(${clamped}%)`;
+      }
+    },
+    [maxTranslateY, minTranslateY]
+  );
 
-  const handleStart = (y) => {
+  const handleStart = useCallback((y) => {
     dragging.current = true;
     startY.current = y;
-  };
+  }, []);
 
-  const handleMove = (y) => {
-    if (!dragging.current) return;
-    const deltaY = y - startY.current;
-    const screenHeight = window.innerHeight;
-    const deltaPercent = (deltaY / screenHeight) * 100;
-    updateSheetPosition(translateY + deltaPercent);
-    startY.current = y;
-  };
+  const handleMove = useCallback(
+    (y) => {
+      if (!dragging.current) return;
+      const deltaY = y - startY.current;
+      const deltaPercent = (deltaY / window.innerHeight) * 100;
+      updateSheetPosition(translateY + deltaPercent);
+      startY.current = y;
+    },
+    [dragging, translateY, updateSheetPosition]
+  );
 
-  const handleEnd = () => {
+  const handleEnd = useCallback(() => {
     dragging.current = false;
-
-    // Decide based on final position whether to open or close
-    if (translateY < 50) {
-      // Less than halfway => snap open
-      setTranslateY(minTranslateY);
-      sheetRef.current.style.transform = `translateY(${minTranslateY}%)`;
-    } else {
-      // Otherwise snap closed
-      setTranslateY(maxTranslateY);
-      sheetRef.current.style.transform = `translateY(${maxTranslateY}%)`;
+    const snapTo = translateY < 50 ? minTranslateY : maxTranslateY;
+    setTranslateY(snapTo);
+    if (sheetRef.current) {
+      sheetRef.current.style.transform = `translateY(${snapTo}%)`;
     }
-  };
-
+  }, [translateY, maxTranslateY, minTranslateY]);
 
   // Touch Events
   const onTouchStart = (e) => handleStart(e.touches[0].clientY);
   const onTouchMove = (e) => handleMove(e.touches[0].clientY);
-  const onTouchEnd = () => handleEnd();
+  const onTouchEnd = handleEnd;
 
   // Mouse Events
   const onMouseDown = (e) => {
@@ -71,6 +69,7 @@ function BottomSheet({ children }) {
 
   useEffect(() => {
     updateSheetPosition(translateY);
+    // eslint-disable-next-line
   }, []);
 
   return (

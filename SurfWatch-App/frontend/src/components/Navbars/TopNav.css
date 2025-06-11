@@ -7,8 +7,8 @@
   width: 100%;
 
   display: flex;
-  align-items:flex-end;  /* Horizontal center */
-  justify-content: center;  /* Vertical center if height is set */
+  align-items:flex-end; 
+  justify-content: center;
   gap: 20%;
 
   background-color: #fbfbfb;

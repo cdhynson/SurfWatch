@@ -7,7 +7,7 @@ function TopNav() {
   const [showSearch, setShowSearch] = useState(false);
 
   const handleSearchToggle = (e) => {
-    e.preventDefault(); // prevent default link behavior
+    e.preventDefault(); 
     setShowSearch((prev) => !prev);
   };
 
@@ -19,7 +19,7 @@ function TopNav() {
 
       {showSearch && (
         <div className="search-overlay">
-          <input type="text" placeholder="Search beaches..." className="search-input" />
+          <input type="text" placeholder="Search beaches... (Currently not functional)" className="search-input" />
         </div>
       )}
     </nav>

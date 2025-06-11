@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "./SessionModal.css"; // use same styles as add modal
+import "./SessionModal.css";
+
+const BEACH_OPTIONS = [
+  "Lower Trestles",
+  "Scripps",
+  "La Jolla",
+  "Del Mar",
+  "Blacks",
+  "Cardiff",
+];
 
 export function EditSessionModal({ sessionId, initialData, token, API_BASE, onClose, onSuccess }) {
   const [title, setTitle] = useState("");
@@ -12,41 +21,41 @@ export function EditSessionModal({ sessionId, initialData, token, API_BASE, onCl
   useEffect(() => {
     if (initialData) {
       setTitle(initialData.title || "");
-      setLocation(initialData.location || "");
-      setStartTime(initialData.start);
-      setEndTime(initialData.end);
+      setLocation(initialData.location || BEACH_OPTIONS[0]);
+      setStartTime(initialData.start || "");
+      setEndTime(initialData.end || "");
       setRating(initialData.rating || 0);
     }
   }, [initialData]);
 
-  const handleUpdate = (e) => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
-
-    axios.patch(
-      `${API_BASE}/api/profile/session/${sessionId}`,
-      {
-        title,
-        location,
-        start: startTime,
-        end: endTime,
-        rating,
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    )
-    .then(() => {
-      onSuccess?.(); // optionally refresh session list
+    try {
+      await axios.patch(
+        `${API_BASE}/api/profile/session/${sessionId}`,
+        {
+          title,
+          location,
+          start: startTime,
+          end: endTime,
+          rating,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      onSuccess?.();
       onClose();
-    })
-    .catch(() => alert("Failed to update session"));
+    } catch {
+      alert("Failed to update session");
+    }
   };
 
   return (
     <div className="session-modal">
       <form onSubmit={handleUpdate}>
         <button type="button" className="close-modal" onClick={onClose}>
-          x
+          ×
         </button>
         <h1>Edit Session</h1>
 
@@ -57,7 +66,8 @@ export function EditSessionModal({ sessionId, initialData, token, API_BASE, onCl
             id="title"
             name="title"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={e => setTitle(e.target.value)}
+            required
           />
         </div>
 
@@ -67,14 +77,14 @@ export function EditSessionModal({ sessionId, initialData, token, API_BASE, onCl
             id="location"
             name="location"
             value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            onChange={e => setLocation(e.target.value)}
+            required
           >
-            <option value="Lower Trestles">Lower Trestles</option>
-            <option value="Scripps">Scripps</option>
-            <option value="La Jolla">La Jolla</option>
-            <option value="Del Mar">Del Mar</option>
-            <option value="Blacks">Blacks</option>
-            <option value="Cardiff">Cardiff</option>
+            {BEACH_OPTIONS.map((beach) => (
+              <option key={beach} value={beach}>
+                {beach}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -85,7 +95,8 @@ export function EditSessionModal({ sessionId, initialData, token, API_BASE, onCl
             id="start"
             name="start"
             value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
+            onChange={e => setStartTime(e.target.value)}
+            required
           />
         </div>
 
@@ -96,7 +107,8 @@ export function EditSessionModal({ sessionId, initialData, token, API_BASE, onCl
             id="end"
             name="end"
             value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
+            onChange={e => setEndTime(e.target.value)}
+            required
           />
         </div>
 
@@ -108,6 +120,12 @@ export function EditSessionModal({ sessionId, initialData, token, API_BASE, onCl
                 key={star}
                 className={star <= rating ? "star filled" : "star"}
                 onClick={() => setRating(star)}
+                role="button"
+                tabIndex={0}
+                aria-label={`Set rating to ${star}`}
+                onKeyPress={e => {
+                  if (e.key === "Enter" || e.key === " ") setRating(star);
+                }}
               >
                 ★
               </span>

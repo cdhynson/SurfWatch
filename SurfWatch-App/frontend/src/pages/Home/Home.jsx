@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -6,7 +6,7 @@ import BottomNav from "../../components/Navbars/BottomNav";
 import TopNav from "../../components/Navbars/TopNav";
 import ForecastChart from "../../components/Forecast/ForecastChart.jsx";
 import BeachCam from "../../components/Home/BeachCam.jsx";
-import {getCurrentDateTimeLocal, computeSurfStreak } from "../../utils.js";
+import { getCurrentDateTimeLocal, computeSurfStreak } from "../../utils.js";
 import { EditSessionModal } from "../../components/Sessions/SessionsModal.jsx";
 
 import "./Home.css";
@@ -15,22 +15,22 @@ function Home() {
   const [activeSessionId, setActiveSessionId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [sessions, setSessions] = useState([]);
-  const sessionToEdit = sessions.find(s => s.id === activeSessionId);
-  const [title, setTitle] = useState("");
-  const [location, setLocation] = useState("");
-  const [startTime, setStartTime] = useState(new Date());
-  const [endTime, setEndTime] = useState("");
-  const [rating, setRating] = useState(0);
-
-  const [username, setUsername] = useState("");
-
   const [loggedIn, setLoggedIn] = useState(false);
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const API_BASE = process.env.REACT_APP_API_URL;
 
+  const sessionToEdit = useMemo(
+    () => sessions.find((s) => s.id === activeSessionId),
+    [sessions, activeSessionId]
+  );
+
   useEffect(() => {
+    if (!token) {
+      setLoggedIn(false);
+      return;
+    }
     axios
       .get(`${API_BASE}/api/profile/session`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -40,13 +40,10 @@ function Home() {
         setLoggedIn(true);
       })
       .catch(() => setLoggedIn(false));
-  }, []);
+  }, [API_BASE, token]);
 
-
-  function startSession() {
+  const startSession = () => {
     const now = getCurrentDateTimeLocal();
-    setStartTime(now);
-
     axios
       .post(
         `${API_BASE}/api/profile/session`,
@@ -63,24 +60,19 @@ function Home() {
       )
       .then((res) => {
         setActiveSessionId(res.data.id);
-        setSessions([...sessions, res.data]);
+        setSessions((prev) => [...prev, res.data]);
       })
       .catch(() => alert("Failed to start session"));
-  }
+  };
 
+  const endSession = () => setShowModal(true);
 
-  function endSession() {
+  const sortedSessions = useMemo(
+    () => [...sessions].sort((a, b) => new Date(b.start) - new Date(a.start)),
+    [sessions]
+  );
 
-    setEndTime(getCurrentDateTimeLocal());
-    setShowModal(true);
-  }
-
-
-  const sortedSessions = React.useMemo(() => {
-    return [...sessions].sort((a, b) => new Date(b.start) - new Date(a.start));
-  }, [sessions]);
-
-  const streak = React.useMemo(
+  const streak = useMemo(
     () => computeSurfStreak(sortedSessions),
     [sortedSessions]
   );
@@ -99,7 +91,7 @@ function Home() {
   ];
 
   const allDays = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"];
-  const todayIndex = new Date().getDay(); // 0 = Sunday, 1 = Monday, ...
+  const todayIndex = new Date().getDay();
   const days = [...allDays.slice(todayIndex), ...allDays.slice(0, todayIndex)];
 
   return (
@@ -136,25 +128,25 @@ function Home() {
           <div className="carousel">
             <div className="carousel-item">
               <img
-                src="https://9e0cfe0e91bd.ngrok.app/video_feed"
+                src="https://86c902c06c05.ngrok.app/video_feed"
                 onError={(e) => {
-                  e.target.onerror = null; 
-                  e.target.src = "/assets/beach-placeholder.png"; 
+                  e.target.onerror = null;
+                  e.target.src = "/assets/beach-placeholder.png";
                 }}
-                object-fit="cover"
+                alt="Live Cam"
+                style={{ objectFit: "cover" }}
               />
               <div className="beachcam-label">
                 <h3>Live Cam</h3>
                 <span className="beach-crowds">
-                  {/* Placeholder for sake of MVP */}
                   <p>Lowest Crowds: 10am</p>
                   <p>Peak Crowds: 8pm</p>
                 </span>
               </div>
             </div>
-            {beaches.map((beach, idx) => (
+            {beaches.map((beach) => (
               <BeachCam
-                key={idx}
+                key={beach.value}
                 name={beach.name}
                 beach={beach.value}
                 url={beach.url}
@@ -171,12 +163,12 @@ function Home() {
               <p key={`label-${i}`}>{d}</p>
             ))}
           </span>
-          {beaches.map((beach, idx) => (
+          {beaches.map((beach) => (
             <ForecastChart
-              key={idx}
+              key={beach.value}
               name={beach.name}
               beach={beach.value}
-              timeUnit={"days"}
+              timeUnit="days"
             />
           ))}
         </section>
@@ -193,10 +185,11 @@ function Home() {
             setActiveSessionId(null);
           }}
           onSuccess={() => {
-            // Optionally refresh session list
-            axios.get(`${API_BASE}/api/profile/session`, {
-              headers: { Authorization: `Bearer ${token}` }
-            }).then(res => setSessions(res.data));
+            axios
+              .get(`${API_BASE}/api/profile/session`, {
+                headers: { Authorization: `Bearer ${token}` },
+              })
+              .then((res) => setSessions(res.data));
           }}
         />
       )}

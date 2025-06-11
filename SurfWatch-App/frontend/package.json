@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "proxy": "https://9e0cfe0e91bd.ngrok.app/video_feed",
+  "proxy": "https://86c902c06c05.ngrok.app/video_feed",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

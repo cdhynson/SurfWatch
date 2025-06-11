@@ -1,33 +1,25 @@
 import React, { useState } from "react";
-import BottomNav from "../../components/Navbars/BottomNav";
-import TopNav from "../../components/Navbars/TopNav";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import BottomNav from "../../components/Navbars/BottomNav";
+import TopNav from "../../components/Navbars/TopNav";
 import "./LoginSignup.css";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
   const navigate = useNavigate();
   const API_BASE = process.env.REACT_APP_API_URL;
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
     try {
-      const loginRes = await axios.post(`${API_BASE}/login`, {
-        email,
-        password,
-      });
-
-      localStorage.setItem("token", loginRes.data.token); // Save token
-      console.log("Succesful log in");
+      const { data } = await axios.post(`${API_BASE}/login`, { email, password });
+      localStorage.setItem("token", data.token);
       navigate("/profile");
-      
     } catch (err) {
-      console.error(err);
       setError("Login failed: Could not connect to server.");
     }
   };
@@ -47,7 +39,8 @@ function Login() {
               placeholder="Enter email address"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
+              autoComplete="username"
             />
           </div>
           <div>
@@ -56,10 +49,11 @@ function Login() {
               type="password"
               id="password"
               name="password"
-              placeholder="Enter password "
+              placeholder="Enter password"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
+              autoComplete="current-password"
             />
           </div>
           <button type="submit">Login</button>

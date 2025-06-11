@@ -10,8 +10,8 @@ section {
 .checkin-section {
   display: flex;
   flex-direction: column;
-  align-items: center;  /* Horizontal center */
-  justify-content: center;  /* Vertical center if height is set */
+  align-items: center; 
+  justify-content: center; 
   text-align: center;
   padding: 1rem 0;
 
@@ -79,7 +79,7 @@ section {
 
 .forecast-days {
   display: flex;
-  justify-content: space-around; /* matches the percentage row */
+  justify-content: space-around;
   align-items: center;
   width: 90%;
   font-size: 14px;
@@ -91,6 +91,6 @@ section {
 
 .forecast-days p {  
   text-align: center;
-  flex: 1; /* ensure even spacing */
+  flex: 1; 
 }
 

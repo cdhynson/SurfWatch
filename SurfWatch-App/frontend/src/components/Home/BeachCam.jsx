@@ -36,7 +36,7 @@ function BeachCam({name, beach, url}){
       .catch((error) => {
         console.error("Error fetching forecast:", error);
       });
-  }, [beach]);
+  }, [beach, API_BASE, lowestTime]);
 
   const handleClick = ()=>{
     navigate("/explore",{
